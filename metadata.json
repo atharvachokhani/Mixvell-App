@@ -1,0 +1,7 @@
+{
+  "name": "Copy of Mixvell: Smart Mocktail Dispenser",
+  "description": "Control your Arduino-based mocktail dispenser via Bluetooth. Create custom mixes or choose specialty drinks.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
