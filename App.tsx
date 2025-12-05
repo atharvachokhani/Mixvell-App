@@ -4,7 +4,7 @@ import { bluetoothService } from './services/bluetoothService';
 import { statsService, AppStats } from './services/statsService';
 import { BluetoothState, DrinkRecipe, Ingredient } from './types';
 import { Button } from './components/Button';
-import { IngredientSlider } from './components/IngredientSlider';
+import { IngredientStepper } from './components/IngredientStepper';
 import { EMPTY_RECIPE, MAX_VOLUME_ML, SPECIALTY_DRINKS, INGREDIENT_COLORS } from './constants';
 import { Cable, Zap, RotateCcw, CupSoda, ChefHat, Sparkles, Smartphone, Laptop, Tablet, AlertTriangle, BarChart3, Trash2, CheckCircle, Martini } from 'lucide-react';
 
@@ -157,7 +157,15 @@ const CustomMixScreen = () => {
   // Calculate total volume
   const currentTotal = (Object.values(recipe) as number[]).reduce((a, b) => a + b, 0);
 
-  const handleSliderChange = (ingredient: Ingredient, value: number) => {
+  // Helper to determine step size per ingredient
+  const getStepSize = (ing: Ingredient) => {
+    if ([Ingredient.WATER, Ingredient.COLA, Ingredient.SODA].includes(ing)) {
+      return 20;
+    }
+    return 10;
+  };
+
+  const handleIngredientChange = (ingredient: Ingredient, value: number) => {
     // 1. Set the new value for this ingredient directly
     let newRecipe = { ...recipe, [ingredient]: value };
     
@@ -210,18 +218,19 @@ const CustomMixScreen = () => {
       </div>
 
       <div className="mb-4 text-xs text-slate-500 text-center">
-        Drag any slider. Total is capped at 100mL (others adjust automatically).
+        Use buttons to adjust. Max 100mL total.
       </div>
 
       <div className="space-y-1">
         {Object.values(Ingredient).map((ing) => (
-          <IngredientSlider
+          <IngredientStepper
             key={ing}
             ingredient={ing}
             value={recipe[ing]}
             max={MAX_VOLUME_ML}
-            onChange={(val) => handleSliderChange(ing, val)}
-            isRelative={false} // Custom mix uses absolute 0-100 scale
+            step={getStepSize(ing)}
+            onChange={(val) => handleIngredientChange(ing, val)}
+            isRelative={false}
           />
         ))}
       </div>
@@ -286,8 +295,10 @@ const SpecialtyAdjustScreen = () => {
 
   useEffect(() => {
     if (drink) {
-      // Default to average of min/max
-      setFlavorAmount(Math.round((drink.minFlavor + drink.maxFlavor) / 2));
+      // Round default to nearest 5
+      const mid = Math.round((drink.minFlavor + drink.maxFlavor) / 2);
+      const rounded = Math.round(mid / 5) * 5;
+      setFlavorAmount(rounded);
     }
   }, [drink]);
 
@@ -366,18 +377,19 @@ const SpecialtyAdjustScreen = () => {
         </div>
 
         <div className="space-y-6">
-          <IngredientSlider 
+          <IngredientStepper 
             ingredient={drink.flavorIngredient}
             label={`Adjust Flavor Intensity`}
             value={flavorAmount}
             max={MAX_VOLUME_ML}
+            step={5} // 5mL increment for specialty
             minConstraint={minFlavor}
             maxConstraint={maxFlavor}
             onChange={handleFlavorChange}
-            isRelative={true} // Enable relative scaling (width maps to range)
+            isRelative={true} // Enable relative scaling for the visual bar
           />
           
-          <IngredientSlider 
+          <IngredientStepper 
              ingredient={drink.baseIngredient}
              label={`Base (${drink.baseIngredient}) - Auto`}
              value={baseAmount}
@@ -390,7 +402,7 @@ const SpecialtyAdjustScreen = () => {
           {/* Fixed Ingredients Display */}
           {Object.entries(drink.fixedIngredients).map(([ing, amt]) => (
              <div key={ing} className="opacity-60 grayscale">
-                <IngredientSlider 
+                <IngredientStepper 
                   ingredient={ing as Ingredient}
                   label={`${ing} (Fixed)`}
                   value={amt || 0}
