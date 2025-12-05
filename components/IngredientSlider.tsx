@@ -13,6 +13,7 @@ interface Props {
   readOnly?: boolean; // New prop for unchangeable but visible sliders
   colorClass?: string;
   label?: string; // Optional override for label
+  isRelative?: boolean; // If true, slider maps full width to minConstraint-maxConstraint
 }
 
 export const IngredientSlider: React.FC<Props> = ({ 
@@ -25,10 +26,26 @@ export const IngredientSlider: React.FC<Props> = ({
   disabled,
   readOnly = false,
   colorClass,
-  label
+  label,
+  isRelative = false
 }) => {
   const bgColor = colorClass || INGREDIENT_COLORS[ingredient];
   const isInteractive = !disabled && !readOnly;
+
+  // Calculate percentage for visual fill
+  let fillPercentage = 0;
+  if (isRelative) {
+    // Map relative range (minConstraint -> maxConstraint) to 0-100%
+    const range = maxConstraint - minConstraint;
+    if (range > 0) {
+      fillPercentage = ((value - minConstraint) / range) * 100;
+    }
+    // Clamp visual
+    fillPercentage = Math.max(0, Math.min(100, fillPercentage));
+  } else {
+    // Standard 0 -> max mapping
+    fillPercentage = (value / max) * 100;
+  }
 
   return (
     <div className={`mb-5 bg-slate-800/50 p-4 rounded-xl border ${readOnly ? 'border-slate-700/50 opacity-80' : 'border-slate-700'} select-none transition-opacity`}>
@@ -42,68 +59,58 @@ export const IngredientSlider: React.FC<Props> = ({
             {value} mL
           </span>
           {/* Show range hints if heavily constrained and interactive */}
-          {(minConstraint > 5 || maxConstraint < max - 5) && isInteractive && (
+          {isRelative && isInteractive && (
              <span className="text-[10px] text-slate-500">
-              Limit: {minConstraint}-{maxConstraint}mL
+              Range: {minConstraint}-{maxConstraint}mL
             </span>
           )}
         </div>
       </div>
       
-      {/* Increased height to h-10 for better touch targets */}
-      <div className={`relative h-10 flex items-center ${isInteractive ? 'touch-none' : ''}`}>
+      {/* Increased height to h-12 (48px) for standard mobile touch target size */}
+      <div className={`relative h-12 flex items-center ${isInteractive ? 'touch-none' : ''}`}>
         {/* Track Background */}
-        <div className="absolute w-full h-3 bg-slate-700 rounded-full overflow-hidden top-1/2 -translate-y-1/2">
-          {/* Min Constraint Marker (Grey out area below min) */}
-          {minConstraint > 0 && isInteractive && (
-            <div 
-              className="absolute h-full bg-slate-800 border-r border-slate-600 z-10" 
-              style={{ width: `${(minConstraint / max) * 100}%` }}
-            />
-          )}
-          {/* Max Constraint Marker (Grey out area above max) */}
-          {maxConstraint < max && isInteractive && (
-            <div 
-              className="absolute h-full bg-slate-800 border-l border-slate-600 z-10 right-0" 
-              style={{ width: `${((max - maxConstraint) / max) * 100}%` }}
-            />
-          )}
-
+        <div className="absolute w-full h-3 bg-slate-700 rounded-full overflow-hidden top-1/2 -translate-y-1/2 pointer-events-none">
           {/* Fill */}
           <div 
             className={`h-full ${bgColor} transition-all duration-75 ease-out`}
-            style={{ width: `${(value / max) * 100}%` }} 
+            style={{ width: `${fillPercentage}%` }} 
           />
         </div>
         
-        {/* Actual Range Input - High Z-Index and Full Height for Touch */}
+        {/* Actual Range Input */}
         <input
           type="range"
-          min={0}
-          max={max}
-          step={1} // Explicit fluid step
+          min={isRelative ? minConstraint : 0}
+          max={isRelative ? maxConstraint : max}
+          step={1} 
           value={value}
           onChange={(e) => {
             if (!isInteractive) return;
-            const newVal = parseInt(e.target.value);
-            // We pass the raw value. The parent component decides if it violates logic.
-            // But we respect visual bounds if needed.
-            if (newVal < minConstraint) {
-               onChange(minConstraint);
-            } else if (newVal > maxConstraint) {
-               onChange(maxConstraint);
+            const newVal = Math.round(Number(e.target.value));
+            
+            // Internal validation just in case, though input attributes handle mostly
+            if (isRelative) {
+              if (newVal < minConstraint) onChange(minConstraint);
+              else if (newVal > maxConstraint) onChange(maxConstraint);
+              else onChange(newVal);
             } else {
-               onChange(newVal);
+              // For custom mix, we rely on parent logic but clamp locally to constraints if present
+              if (newVal < minConstraint) onChange(minConstraint);
+              else if (newVal > maxConstraint) onChange(maxConstraint);
+              else onChange(newVal);
             }
           }}
           disabled={disabled || readOnly}
-          className={`absolute w-full h-full opacity-0 z-30 ${isInteractive ? 'cursor-pointer touch-none' : 'cursor-default'}`}
+          // z-50 ensures it is absolutely on top of everything
+          className={`absolute w-full h-full opacity-0 z-50 ${isInteractive ? 'cursor-pointer' : 'cursor-default'}`}
+          style={{ touchAction: 'none' }} // Critical for preventing scroll while dragging
         />
         
-        {/* Thumb visual */}
+        {/* Thumb visual - purely decorative, follows the calculation */}
         <div 
-          className={`pointer-events-none absolute w-6 h-6 rounded-full shadow-lg border-2 transition-all duration-75 ease-out z-20 top-1/2 -translate-y-1/2 ${readOnly ? 'bg-slate-500 border-slate-600 hidden' : 'bg-white border-slate-200'}`}
-          style={{ left: `calc(${(value / max) * 100}% - 12px)` }}
+          className={`pointer-events-none absolute w-7 h-7 rounded-full shadow-lg border-2 transition-all duration-75 ease-out z-40 top-1/2 -translate-y-1/2 ${readOnly ? 'bg-slate-500 border-slate-600 hidden' : 'bg-white border-slate-200'}`}
+          style={{ left: `calc(${fillPercentage}% - 14px)` }}
         />
       </div>
     </div>

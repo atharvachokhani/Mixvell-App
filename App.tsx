@@ -155,14 +155,14 @@ const CustomMixScreen = () => {
   const [recipe, setRecipe] = useState<DrinkRecipe>({...EMPTY_RECIPE});
   
   // Calculate total volume
-  const currentTotal = Object.values(recipe).reduce((a, b) => a + b, 0);
+  const currentTotal = (Object.values(recipe) as number[]).reduce((a, b) => a + b, 0);
 
   const handleSliderChange = (ingredient: Ingredient, value: number) => {
     // 1. Set the new value for this ingredient directly
     let newRecipe = { ...recipe, [ingredient]: value };
     
     // 2. Calculate the new sum
-    let newTotal = Object.values(newRecipe).reduce((a, b) => a + b, 0);
+    let newTotal = (Object.values(newRecipe) as number[]).reduce((a, b) => a + b, 0);
 
     // 3. If total > 100, we need to subtract from other ingredients (Auto-balance)
     if (newTotal > MAX_VOLUME_ML) {
@@ -221,6 +221,7 @@ const CustomMixScreen = () => {
             value={recipe[ing]}
             max={MAX_VOLUME_ML}
             onChange={(val) => handleSliderChange(ing, val)}
+            isRelative={false} // Custom mix uses absolute 0-100 scale
           />
         ))}
       </div>
@@ -369,10 +370,11 @@ const SpecialtyAdjustScreen = () => {
             ingredient={drink.flavorIngredient}
             label={`Adjust Flavor Intensity`}
             value={flavorAmount}
-            max={MAX_VOLUME_ML} // Scale relative to cup
+            max={MAX_VOLUME_ML}
             minConstraint={minFlavor}
             maxConstraint={maxFlavor}
             onChange={handleFlavorChange}
+            isRelative={true} // Enable relative scaling (width maps to range)
           />
           
           <IngredientSlider 
@@ -446,7 +448,7 @@ const StatsScreen = () => {
   };
 
   // Find max value for scaling the bars
-  const maxVolume = Math.max(...Object.values(stats.ingredientUsage), 1);
+  const maxVolume = Math.max(...(Object.values(stats.ingredientUsage) as number[]), 1);
 
   return (
     <div className="min-h-screen p-6 max-w-md mx-auto bg-slate-950">
