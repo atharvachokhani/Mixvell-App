@@ -6,7 +6,8 @@ import { BluetoothState, DrinkRecipe, Ingredient } from './types';
 import { Button } from './components/Button';
 import { IngredientStepper } from './components/IngredientStepper';
 import { EMPTY_RECIPE, MAX_VOLUME_ML, SPECIALTY_DRINKS, INGREDIENT_COLORS } from './constants';
-import { Cable, Zap, RotateCcw, CupSoda, ChefHat, Sparkles, Smartphone, Laptop, Tablet, AlertTriangle, BarChart3, Trash2, CheckCircle, Martini } from 'lucide-react';
+import { ARDUINO_SKETCH } from './services/firmwareTemplate';
+import { Cable, Zap, RotateCcw, CupSoda, ChefHat, Sparkles, Smartphone, Laptop, Tablet, AlertTriangle, BarChart3, Trash2, CheckCircle, Martini, Code, Copy, Check } from 'lucide-react';
 
 // 1. Connection Screen
 const ConnectScreen = () => {
@@ -115,21 +116,32 @@ const ConnectScreen = () => {
           </p>
         </div>
 
-        <Button 
-          variant="neon" 
-          onClick={handleConnect} 
-          isLoading={status === 'CONNECTING'}
-          className="w-full text-lg py-4 mb-3"
-        >
-          {status === 'CONNECTED' ? 'Connected!' : 'Connect to Dispenser'}
-        </Button>
+        <div className="flex flex-col gap-3">
+          <Button 
+            variant="neon" 
+            onClick={handleConnect} 
+            isLoading={status === 'CONNECTING'}
+            className="w-full text-lg py-4"
+          >
+            {status === 'CONNECTED' ? 'Connected!' : 'Connect to Dispenser'}
+          </Button>
 
-        <button 
-          onClick={handleSimulate}
-          className="text-slate-500 text-sm hover:text-white underline underline-offset-4"
-        >
-          No hardware? Simulation Mode
-        </button>
+          <button
+            onClick={() => navigate('/firmware')}
+            className="flex items-center justify-center gap-2 py-3 w-full rounded-lg border border-slate-700 hover:bg-slate-800 transition-colors text-slate-400 text-sm"
+          >
+            <Code size={16} /> Get Arduino Firmware
+          </button>
+        </div>
+
+        <div className="mt-4">
+          <button 
+            onClick={handleSimulate}
+            className="text-slate-500 text-sm hover:text-white underline underline-offset-4"
+          >
+            No hardware? Simulation Mode
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -553,12 +565,80 @@ const StatsScreen = () => {
   );
 };
 
+// 8. Firmware Code Screen
+const FirmwareScreen = () => {
+  const navigate = useNavigate();
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(ARDUINO_SKETCH);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="min-h-screen p-6 max-w-3xl mx-auto flex flex-col">
+      <div className="flex items-center justify-between mb-6">
+        <button 
+          onClick={() => navigate('/')} 
+          className="flex items-center gap-2 text-slate-400 hover:text-white bg-slate-800/50 px-4 py-2 rounded-full"
+        >
+          <RotateCcw size={16} /> Back
+        </button>
+        <h2 className="text-xl font-bold text-white">Arduino Firmware</h2>
+        <button 
+          onClick={handleCopy}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
+            copied ? 'bg-green-500 text-white' : 'bg-neon-blue text-black hover:bg-cyan-300'
+          }`}
+        >
+          {copied ? <Check size={16} /> : <Copy size={16} />}
+          {copied ? 'Copied!' : 'Copy Code'}
+        </button>
+      </div>
+
+      <div className="flex-1 bg-slate-900 rounded-xl border border-slate-700 p-4 overflow-hidden relative font-mono text-sm shadow-2xl">
+        <div className="absolute top-0 left-0 right-0 h-8 bg-slate-800 flex items-center px-4 border-b border-slate-700">
+          <div className="flex gap-2">
+            <div className="w-3 h-3 rounded-full bg-red-500"></div>
+            <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+            <div className="w-3 h-3 rounded-full bg-green-500"></div>
+          </div>
+          <span className="ml-4 text-xs text-slate-400">mixvell_firmware.ino</span>
+        </div>
+        <textarea 
+          className="w-full h-full bg-transparent text-slate-300 p-4 pt-8 focus:outline-none resize-none"
+          readOnly
+          value={ARDUINO_SKETCH}
+          spellCheck={false}
+        />
+      </div>
+
+      <div className="mt-6 p-4 bg-slate-800/50 rounded-lg text-sm text-slate-400 border border-slate-700">
+        <h3 className="font-bold text-white mb-2 flex items-center gap-2"><AlertTriangle size={16} className="text-yellow-400"/> Wiring Guide</h3>
+        <ul className="grid grid-cols-2 gap-2">
+          <li>Pin 2: Water</li>
+          <li>Pin 3: Cola</li>
+          <li>Pin 4: Soda</li>
+          <li>Pin 5: Sugar</li>
+          <li>Pin 6: Lemon</li>
+          <li>Pin 7: Orange</li>
+        </ul>
+        <p className="mt-3 text-xs opacity-70 border-t border-slate-700 pt-2">
+          <strong>Tip:</strong> Disconnect Bluetooth RX/TX pins while uploading this code to Arduino, then reconnect them.
+        </p>
+      </div>
+    </div>
+  );
+};
+
 // Main App Component with Routes
 const App = () => {
   return (
     <HashRouter>
       <Routes>
         <Route path="/" element={<ConnectScreen />} />
+        <Route path="/firmware" element={<FirmwareScreen />} />
         <Route path="/menu" element={<MenuScreen />} />
         <Route path="/custom" element={<CustomMixScreen />} />
         <Route path="/specialty" element={<SpecialtyListScreen />} />
