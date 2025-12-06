@@ -24,7 +24,19 @@ const ConnectScreen = () => {
     } catch (e: any) {
       console.error(e);
       setStatus('ERROR');
-      setError(e.message || 'Connection failed');
+      
+      let msg = e.message || 'Connection failed';
+      
+      // Friendly error mapping for Web Serial issues
+      if (msg.includes('Failed to open serial port')) {
+        msg = '❌ Port Busy or Blocked.\n\n1. Close Arduino IDE or Serial Monitor.\n2. Ensure no other browser tabs are connected.\n3. Try un-pairing and re-pairing the Bluetooth device.\n4. (Mac) Try selecting the "/dev/cu..." option.';
+      } else if (msg.includes('No port selected')) {
+        msg = ''; // User cancelled, just reset
+        setStatus('DISCONNECTED');
+        return;
+      }
+      
+      setError(msg);
     }
   };
 
@@ -51,30 +63,37 @@ const ConnectScreen = () => {
         <p className="text-slate-400 mb-6">Smart Mocktail Dispenser</p>
         
         {error && (
-          <div className="mb-6 p-3 bg-red-900/50 border border-red-500/50 rounded text-red-200 text-sm">
+          <div className="mb-6 p-3 bg-red-900/50 border border-red-500/50 rounded text-red-200 text-sm whitespace-pre-line text-left leading-relaxed">
             {error}
           </div>
         )}
 
-        <div className="bg-slate-800/50 rounded-lg p-4 mb-6 text-xs text-left text-slate-400 border border-slate-700">
+        <div className="bg-slate-800/50 rounded-lg p-4 mb-6 text-xs text-left text-slate-400 border border-slate-700 overflow-y-auto max-h-48">
           <p className="font-bold text-slate-300 mb-2 flex items-center gap-2">
-            <Smartphone size={14} /> <Tablet size={14} /> Mobile / Tablet (Android)
+            <Laptop size={14} /> Desktop (Windows / Mac)
           </p>
-          <p className="mb-3">Connect via <strong>USB OTG Cable</strong>. Open Chrome and click Connect. (iOS not supported).</p>
+          <ol className="list-decimal ml-4 space-y-2 mb-4">
+            <li>
+              <span className="text-white font-semibold">Pair First:</span> Go to Bluetooth settings and pair with <strong>HC-05</strong> (Pin: 1234).
+            </li>
+            <li>
+              <span className="text-white font-semibold">Connect:</span> Click the button below.
+            </li>
+            <li>
+              <span className="text-white font-semibold">Select Port:</span>
+              <ul className="list-disc ml-2 mt-1 space-y-1 text-slate-500">
+                <li><strong>Windows:</strong> Select 'Standard Serial over Bluetooth' (COM#).</li>
+                <li><strong>Mac:</strong> Select 'HC-05' or '/dev/cu.HC-05'.</li>
+              </ul>
+            </li>
+          </ol>
           
           <p className="font-bold text-slate-300 mb-2 flex items-center gap-2">
-            <Laptop size={14} /> Desktop (Mac/PC)
+            <Smartphone size={14} /> Mobile (Android)
           </p>
-          <ul className="list-disc ml-4 space-y-1">
-            <li>Pair HC-05 via Bluetooth settings or use USB.</li>
-            <li>Click Connect below.</li>
-            <li>
-              <strong>Mac:</strong> Select <span className="font-mono text-neon-blue">/dev/cu.usbmodem...</span> or <span className="font-mono text-neon-blue">HC-05</span>
-            </li>
-            <li>
-              <strong>Windows:</strong> Select the <span className="font-mono text-neon-blue">COM Port</span>.
-            </li>
-          </ul>
+          <p className="ml-4">
+            Wireless Bluetooth is <strong className="text-red-400">not</strong> supported in Chrome for HC-05. Please use a <strong>USB OTG Cable</strong> to connect Arduino directly to your phone.
+          </p>
         </div>
 
         <Button 
