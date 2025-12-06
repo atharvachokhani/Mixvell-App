@@ -30,14 +30,35 @@ export class BluetoothService {
       // Request a port and open a connection.
       // 9600 is the default baud rate for HC-05 and Arduino Serial.
       const port = await (navigator as any).serial.requestPort();
-      await port.open({ baudRate: 9600 });
+      
+      // CRITICAL FIX: Check if the port is already open before calling open()
+      // If port.readable is not null, the port is already open.
+      if (!port.readable) {
+        await port.open({ baudRate: 9600 });
+      } else {
+        console.log('Port was already open. Reusing connection.');
+      }
       
       this.port = port;
       
-      // Setup the writer stream
-      const textEncoder = new TextEncoderStream();
-      const writableStreamClosed = textEncoder.readable.pipeTo(port.writable);
-      this.writer = textEncoder.writable.getWriter();
+      // Setup the writer stream only if it's not already set up or locked
+      if (!this.writer || (this.port.writable && !this.port.writable.locked)) {
+        // If the port is open but writable is locked, it usually means we already have a writer attached
+        // from a previous session (singleton pattern).
+        
+        if (this.port.writable.locked) {
+           // Writer exists and port is locked. We assume the existing writer is valid.
+           if (!this.writer) {
+             // This is a rare edge case: port locked but we lost the writer reference.
+             // We can't recover easily without a hard reload.
+             throw new Error("Port is locked by another process. Please refresh the page.");
+           }
+        } else {
+           const textEncoder = new TextEncoderStream();
+           const writableStreamClosed = textEncoder.readable.pipeTo(port.writable);
+           this.writer = textEncoder.writable.getWriter();
+        }
+      }
       
       console.log('Serial connected successfully');
     } catch (error) {
@@ -57,6 +78,7 @@ export class BluetoothService {
     if (this.port) {
       // Closing serial ports properly is complex in JS, usually we just let the page reload handle it
       // or implement the full lock release logic. For this simple app, we just nullify.
+      // To actually close: await this.writer.close(); await this.port.close();
       this.port = null;
       this.writer = null;
     }
@@ -90,7 +112,14 @@ export class BluetoothService {
     }
 
     if (!this.writer) {
-      throw new Error('Not connected to a device.');
+      // Try to recover if port is there but writer missing (rare)
+      if (this.port && this.port.writable && !this.port.writable.locked) {
+         const textEncoder = new TextEncoderStream();
+         textEncoder.readable.pipeTo(this.port.writable);
+         this.writer = textEncoder.writable.getWriter();
+      } else {
+         throw new Error('Not connected to a device.');
+      }
     }
 
     try {

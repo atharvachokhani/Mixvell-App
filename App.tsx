@@ -14,7 +14,20 @@ const ConnectScreen = () => {
   const [status, setStatus] = useState<BluetoothState>('DISCONNECTED');
   const [error, setError] = useState('');
 
+  // Check if we are already connected (e.g. navigated back)
+  useEffect(() => {
+    if (bluetoothService.isConnected()) {
+      setStatus('CONNECTED');
+    }
+  }, []);
+
   const handleConnect = async () => {
+    // If already connected, just proceed
+    if (bluetoothService.isConnected()) {
+      navigate('/menu');
+      return;
+    }
+
     setStatus('CONNECTING');
     setError('');
     try {
@@ -28,12 +41,18 @@ const ConnectScreen = () => {
       let msg = e.message || 'Connection failed';
       
       // Friendly error mapping for Web Serial issues
-      if (msg.includes('Failed to open serial port')) {
-        msg = '❌ Port Busy or Blocked.\n\n1. Close Arduino IDE or Serial Monitor.\n2. Ensure no other browser tabs are connected.\n3. Try un-pairing and re-pairing the Bluetooth device.\n4. (Mac) Try selecting the "/dev/cu..." option.';
+      if (msg.includes('Failed to open serial port') || msg.includes('Access denied')) {
+        msg = '❌ Port Busy or Blocked.\n\n1. Close Arduino IDE or Serial Monitor.\n2. Ensure no other browser tabs are connected.\n3. Try un-pairing and re-pairing the Bluetooth device.';
       } else if (msg.includes('No port selected')) {
         msg = ''; // User cancelled, just reset
         setStatus('DISCONNECTED');
         return;
+      } else if (msg.includes('The port is already open')) {
+         // This is actually a success case technically, we just caught the re-open attempt
+         console.log("Port was already open, proceeding.");
+         setStatus('CONNECTED');
+         setTimeout(() => navigate('/menu'), 800);
+         return;
       }
       
       setError(msg);
