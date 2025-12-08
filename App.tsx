@@ -209,9 +209,11 @@ const CustomMixScreen = () => {
 
   // Helper to determine step size per ingredient
   const getStepSize = (ing: Ingredient) => {
+    // Water, Cola, Soda = 20mL steps
     if ([Ingredient.WATER, Ingredient.COLA, Ingredient.SODA].includes(ing)) {
       return 20;
     }
+    // Others = 10mL steps
     return 10;
   };
 
@@ -345,10 +347,15 @@ const SpecialtyAdjustScreen = () => {
 
   useEffect(() => {
     if (drink) {
-      // Round default to nearest 5
-      const mid = Math.round((drink.minFlavor + drink.maxFlavor) / 2);
-      const rounded = Math.round(mid / 5) * 5;
-      setFlavorAmount(rounded);
+      // Round default to nearest 5, clamped to min/max
+      let mid = Math.round((drink.minFlavor + drink.maxFlavor) / 2);
+      mid = Math.round(mid / 5) * 5;
+      
+      // Ensure it's strictly within bounds
+      if (mid < drink.minFlavor) mid = drink.minFlavor;
+      if (mid > drink.maxFlavor) mid = drink.maxFlavor;
+      
+      setFlavorAmount(mid);
     }
   }, [drink]);
 
@@ -368,16 +375,11 @@ const SpecialtyAdjustScreen = () => {
   const baseAmount = availableVolume - flavorAmount;
 
   const handleFlavorChange = (val: number) => {
-    // Check range
+    // The IngredientStepper handles min/max constraints before calling this.
+    // But we add a safety check just in case.
     let newVal = val;
     if (newVal < minFlavor) newVal = minFlavor;
     if (newVal > maxFlavor) newVal = maxFlavor;
-    
-    // Safety: ensure base doesn't drop below 0 (though maxFlavor should prevent this)
-    if (availableVolume - newVal < 0) {
-      newVal = availableVolume;
-    }
-
     setFlavorAmount(newVal);
   };
 
@@ -441,7 +443,7 @@ const SpecialtyAdjustScreen = () => {
           
           <IngredientStepper 
              ingredient={drink.baseIngredient}
-             label={`Base (${drink.baseIngredient}) - Auto`}
+             label={`${drink.baseIngredient} (Auto-Adjusts)`}
              value={baseAmount}
              max={MAX_VOLUME_ML}
              onChange={() => {}} // No-op

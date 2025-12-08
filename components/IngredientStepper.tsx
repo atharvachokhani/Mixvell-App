@@ -35,16 +35,20 @@ export const IngredientStepper: React.FC<Props> = ({
   const handleDecrease = () => {
     if (readOnly || !onChange) return;
     let next = value - step;
-    // Snap to min constraint
+    
+    // Safety check for clean steps: if we land slightly below min, just snap to min
     if (next < minConstraint) next = minConstraint;
+    
     onChange(next);
   };
 
   const handleIncrease = () => {
     if (readOnly || !onChange) return;
     let next = value + step;
-    // Snap to max constraint
+    
+    // Safety check: snap to max
     if (next > maxConstraint) next = maxConstraint;
+    
     onChange(next);
   };
 
@@ -67,7 +71,6 @@ export const IngredientStepper: React.FC<Props> = ({
           <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">
             {label || ingredient}
           </label>
-          {readOnly && <span className="text-[10px] bg-slate-700 px-1.5 py-0.5 rounded text-slate-400">AUTO</span>}
         </div>
         <div className="text-xl font-bold text-white tabular-nums">
           {value} <span className="text-xs text-slate-500 font-normal">mL</span>
@@ -108,10 +111,10 @@ export const IngredientStepper: React.FC<Props> = ({
           </button>
         </div>
       ) : (
-        /* Read-only Bar */
-        <div className="h-3 bg-slate-900/50 rounded-full overflow-hidden relative mt-2">
+        /* Read-only Bar - Styled to look purposeful, not like a disabled control */
+        <div className="mt-2 h-3 w-full bg-slate-900/40 rounded-full overflow-hidden border border-white/5">
            <div 
-             className={`h-full ${bgColor} opacity-60 transition-all duration-300`}
+             className={`h-full ${bgColor} opacity-70 transition-all duration-500`}
              style={{ width: `${fillPercentage}%` }} 
            />
         </div>

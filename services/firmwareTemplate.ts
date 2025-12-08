@@ -1,11 +1,11 @@
 export const ARDUINO_SKETCH = `
 /*
- * Mixvell Mocktail Dispenser Firmware
+ * Mixvell Mocktail Dispenser Firmware (v2.0)
  * -----------------------------------
  * Hardware:
  * - Arduino Uno / Nano
- * - HC-05 Bluetooth Module (or USB Serial)
- * - 6-Channel Relay Module (Active LOW typically)
+ * - HC-05 Bluetooth Module
+ * - 6-Channel Relay Module
  * 
  * Pins:
  * - D2: Water
@@ -19,6 +19,7 @@ export const ARDUINO_SKETCH = `
 // --- CONFIGURATION ---
 // Time in milliseconds to pump 1mL of liquid.
 // CALIBRATION REQUIRED: Measure how long it takes to pump 100mL, then divide by 100.
+// Example: If 100mL takes 10 seconds (10000ms), then MS_PER_ML = 100.
 const int MS_PER_ML = 100; 
 
 // Pins definitions
@@ -34,9 +35,15 @@ String inputString = "";         // A String to hold incoming data
 boolean stringComplete = false;  // Whether the string is complete
 
 void setup() {
-  // Initialize Serial
+  // Initialize Serial at 9600 baud (Standard for HC-05)
   Serial.begin(9600);
+  
+  // Reserve memory to prevent fragmentation
   inputString.reserve(200);
+
+  // Initialize Built-in LED for debugging
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, LOW);
 
   // Initialize Pump Pins
   pinMode(PIN_WATER, OUTPUT);
@@ -46,8 +53,7 @@ void setup() {
   pinMode(PIN_LEMON, OUTPUT);
   pinMode(PIN_ORANGE, OUTPUT);
 
-  // Turn off all relays initially (Assuming Active LOW relays, HIGH = OFF)
-  // If your relays are Active HIGH, change these to LOW.
+  // Turn off all relays initially (Active LOW: HIGH = OFF)
   digitalWrite(PIN_WATER, HIGH);
   digitalWrite(PIN_COLA, HIGH);
   digitalWrite(PIN_SODA, HIGH);
@@ -61,21 +67,28 @@ void setup() {
 void loop() {
   // Check for serial input
   if (stringComplete) {
+    // BLINK LED to indicate data received (Debug)
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(100);
+    digitalWrite(LED_BUILTIN, LOW);
+    
     processCommand(inputString);
-    // clear the string:
+    
+    // Clear for next command
     inputString = "";
     stringComplete = false;
   }
 }
 
 /*
-  SerialEvent occurs whenever a new data comes in the hardware serial RX. 
+  SerialEvent occurs whenever new data comes in the hardware serial RX. 
   This routine is run between each time loop() runs.
 */
 void serialEvent() {
   while (Serial.available()) {
     char inChar = (char)Serial.read();
     inputString += inChar;
+    // Look for newline character to signify end of command
     if (inChar == '\\n') {
       stringComplete = true;
     }
@@ -83,15 +96,16 @@ void serialEvent() {
 }
 
 void processCommand(String command) {
-  Serial.println("Processing...");
+  Serial.print("Received: ");
+  Serial.println(command);
   
   // Expected format: "Water,Cola,Soda,Sugar,Lemon,Orange\\n"
   // Example: "0,0,50,10,10,0"
   
   int values[6];
-  int currentIndex = 0;
   int lastCommaIndex = -1;
 
+  // Manual CSV parsing is more robust than sscanf on Arduino
   for (int i = 0; i < 6; i++) {
     int nextCommaIndex = command.indexOf(',', lastCommaIndex + 1);
     
@@ -101,11 +115,15 @@ void processCommand(String command) {
     }
     
     String valStr = command.substring(lastCommaIndex + 1, nextCommaIndex);
+    
+    // Basic cleanup to remove whitespace/newlines
+    valStr.trim();
+    
     values[i] = valStr.toInt();
     lastCommaIndex = nextCommaIndex;
   }
 
-  // Dispense sequentially to ensure stable power supply
+  // Dispense sequentially
   if (values[0] > 0) pump(PIN_WATER, values[0]);
   if (values[1] > 0) pump(PIN_COLA, values[1]);
   if (values[2] > 0) pump(PIN_SODA, values[2]);
@@ -127,11 +145,14 @@ void pump(int pin, int ml) {
   Serial.print(ml);
   Serial.println("mL");
 
-  // ACTIVE LOW LOGIC (LOW = ON)
+  // TURN PUMP ON (Active LOW)
   digitalWrite(pin, LOW); 
+  
   delay(duration);
+  
+  // TURN PUMP OFF
   digitalWrite(pin, HIGH);
   
-  delay(200); // Short pause between ingredients
+  delay(200); // Short pause to let pressure settle
 }
 `;
