@@ -1,6 +1,6 @@
 export const ARDUINO_SKETCH = `
 /*
- * Mixvell Mocktail Dispenser Firmware (v2.0)
+ * Mixvell Mocktail Dispenser Firmware (v3.0 - Robust Parsing)
  * -----------------------------------
  * Hardware:
  * - Arduino Uno / Nano
@@ -61,7 +61,7 @@ void setup() {
   digitalWrite(PIN_LEMON, HIGH);
   digitalWrite(PIN_ORANGE, HIGH);
 
-  Serial.println("Mixvell Dispenser Ready.");
+  Serial.println("Mixvell Dispenser Ready (v3.0).");
 }
 
 void loop() {
@@ -96,40 +96,38 @@ void serialEvent() {
 }
 
 void processCommand(String command) {
-  Serial.print("Received: ");
+  Serial.print("Raw Input: ");
   Serial.println(command);
   
-  // Expected format: "Water,Cola,Soda,Sugar,Lemon,Orange\\n"
-  // Example: "0,0,50,10,10,0"
-  
-  int values[6];
-  int lastCommaIndex = -1;
+  // Clean the string (remove whitespace/newlines)
+  command.trim();
 
-  // Manual CSV parsing is more robust than sscanf on Arduino
-  for (int i = 0; i < 6; i++) {
-    int nextCommaIndex = command.indexOf(',', lastCommaIndex + 1);
-    
-    // Handle the last value (no comma after it)
-    if (nextCommaIndex == -1) {
-      nextCommaIndex = command.length();
-    }
-    
-    String valStr = command.substring(lastCommaIndex + 1, nextCommaIndex);
-    
-    // Basic cleanup to remove whitespace/newlines
-    valStr.trim();
-    
-    values[i] = valStr.toInt();
-    lastCommaIndex = nextCommaIndex;
-  }
+  // Variables to hold parsed values
+  int v[6] = {0, 0, 0, 0, 0, 0};
+
+  // Use sscanf for standard CSV parsing
+  // Format: Water,Cola,Soda,Sugar,Lemon,Orange
+  int parsedCount = sscanf(command.c_str(), "%d,%d,%d,%d,%d,%d", 
+                           &v[0], &v[1], &v[2], &v[3], &v[4], &v[5]);
+
+  Serial.print("Parsed items: ");
+  Serial.println(parsedCount);
+  
+  // Debug output to verify what the Arduino "sees"
+  Serial.print("1. Water:  "); Serial.println(v[0]);
+  Serial.print("2. Cola:   "); Serial.println(v[1]);
+  Serial.print("3. Soda:   "); Serial.println(v[2]);
+  Serial.print("4. Sugar:  "); Serial.println(v[3]);
+  Serial.print("5. Lemon:  "); Serial.println(v[4]);
+  Serial.print("6. Orange: "); Serial.println(v[5]);
 
   // Dispense sequentially
-  if (values[0] > 0) pump(PIN_WATER, values[0]);
-  if (values[1] > 0) pump(PIN_COLA, values[1]);
-  if (values[2] > 0) pump(PIN_SODA, values[2]);
-  if (values[3] > 0) pump(PIN_SUGAR, values[3]);
-  if (values[4] > 0) pump(PIN_LEMON, values[4]);
-  if (values[5] > 0) pump(PIN_ORANGE, values[5]);
+  if (v[0] > 0) pump(PIN_WATER, v[0]);
+  if (v[1] > 0) pump(PIN_COLA, v[1]);
+  if (v[2] > 0) pump(PIN_SODA, v[2]);
+  if (v[3] > 0) pump(PIN_SUGAR, v[3]);
+  if (v[4] > 0) pump(PIN_LEMON, v[4]);
+  if (v[5] > 0) pump(PIN_ORANGE, v[5]);
 
   Serial.println("Done");
 }
