@@ -7,7 +7,7 @@ import { Button } from './components/Button';
 import { IngredientStepper } from './components/IngredientStepper';
 import { EMPTY_RECIPE, MAX_VOLUME_ML, SPECIALTY_DRINKS, INGREDIENT_COLORS } from './constants';
 import { ARDUINO_SKETCH } from './services/firmwareTemplate';
-import { Cable, Zap, RotateCcw, CupSoda, ChefHat, Sparkles, Smartphone, Laptop, Tablet, AlertTriangle, BarChart3, Trash2, CheckCircle, Martini, Code, Copy, Check } from 'lucide-react';
+import { Zap, RotateCcw, CupSoda, Laptop, Smartphone, AlertTriangle, BarChart3, Trash2, CheckCircle, Martini, Code, Copy, Check } from 'lucide-react';
 
 // 1. Connection Screen
 const ConnectScreen = () => {
@@ -66,6 +66,19 @@ const ConnectScreen = () => {
     setStatus('CONNECTED');
     setTimeout(() => navigate('/menu'), 800);
   };
+  
+  const handleTestConnection = async () => {
+    if (!bluetoothService.isConnected()) {
+      setError("Please connect first.");
+      return;
+    }
+    try {
+      await bluetoothService.testConnection();
+      alert("Sent ping! Check if Arduino LED blinks.");
+    } catch (e) {
+      setError("Failed to send test ping.");
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center bg-[url('https://picsum.photos/1920/1080?blur=10')] bg-cover bg-center relative">
@@ -103,7 +116,7 @@ const ConnectScreen = () => {
               <span className="text-white font-semibold">Select Port:</span>
               <ul className="list-disc ml-2 mt-1 space-y-1 text-slate-500">
                 <li><strong>Windows:</strong> Select 'Standard Serial over Bluetooth' (COM#).</li>
-                <li><strong>Mac:</strong> Select 'HC-05' or '/dev/cu.HC-05'.</li>
+                <li><strong>Mac:</strong> Look for <code>cu.HC-05</code>. If missing, forget device and re-pair.</li>
               </ul>
             </li>
           </ol>
@@ -125,6 +138,15 @@ const ConnectScreen = () => {
           >
             {status === 'CONNECTED' ? 'Connected!' : 'Connect to Dispenser'}
           </Button>
+
+          {status === 'CONNECTED' && (
+             <button
+               onClick={handleTestConnection}
+               className="text-xs text-neon-blue underline"
+             >
+               Test Connection (Ping LED)
+             </button>
+          )}
 
           <button
             onClick={() => navigate('/firmware')}
@@ -213,8 +235,8 @@ const CustomMixScreen = () => {
     if ([Ingredient.WATER, Ingredient.COLA, Ingredient.SODA].includes(ing)) {
       return 20;
     }
-    // Others = 10mL steps
-    return 10;
+    // Others = 5mL steps (Reduced from 10mL for finer control of thick syrups)
+    return 5;
   };
 
   const handleIngredientChange = (ingredient: Ingredient, value: number) => {
@@ -233,14 +255,25 @@ const CustomMixScreen = () => {
         .filter(k => k !== ingredient && newRecipe[k] > 0)
         .sort((a, b) => newRecipe[b] - newRecipe[a]);
 
+      let canBalance = false;
+      
+      // Try to reduce others
       for (const other of otherIngredients) {
         if (overflow <= 0) break;
         
         const available = newRecipe[other];
         const toTake = Math.min(available, overflow);
         
+        if (toTake > 0) canBalance = true;
+
         newRecipe[other] -= toTake;
         overflow -= toTake;
+      }
+      
+      // If we still have overflow, it means we couldn't balance it out (other ingredients are empty)
+      // So we must clamp the target ingredient down.
+      if (overflow > 0) {
+        newRecipe[ingredient] -= overflow;
       }
     }
 
@@ -347,15 +380,9 @@ const SpecialtyAdjustScreen = () => {
 
   useEffect(() => {
     if (drink) {
-      // Round default to nearest 5, clamped to min/max
-      let mid = Math.round((drink.minFlavor + drink.maxFlavor) / 2);
-      mid = Math.round(mid / 5) * 5;
-      
-      // Ensure it's strictly within bounds
-      if (mid < drink.minFlavor) mid = drink.minFlavor;
-      if (mid > drink.maxFlavor) mid = drink.maxFlavor;
-      
-      setFlavorAmount(mid);
+      // Start at min flavor (weakest) to be safe with potent syrups
+      let safeStart = drink.minFlavor;
+      setFlavorAmount(safeStart);
     }
   }, [drink]);
 
@@ -372,7 +399,11 @@ const SpecialtyAdjustScreen = () => {
   const maxFlavor = drink.maxFlavor;
 
   // 4. Calculate Current Base Amount (Derived)
-  const baseAmount = availableVolume - flavorAmount;
+  // Ensure we don't go negative on base calculation
+  const baseAmount = Math.max(0, availableVolume - flavorAmount);
+
+  // Safety check for Total visual
+  const currentTotal = baseAmount + flavorAmount + fixedVolume;
 
   const handleFlavorChange = (val: number) => {
     // The IngredientStepper handles min/max constraints before calling this.
@@ -396,6 +427,14 @@ const SpecialtyAdjustScreen = () => {
     
     // Add Variable Base
     recipe[drink.baseIngredient] = (recipe[drink.baseIngredient] || 0) + baseAmount;
+    
+    // Final Integer Rounding Safety
+    Object.keys(recipe).forEach(key => {
+        // @ts-ignore
+        recipe[key] = Math.round(recipe[key]);
+    });
+    
+    console.log("Sending Recipe:", recipe);
 
     try {
       await bluetoothService.dispenseDrink(recipe);
@@ -425,6 +464,9 @@ const SpecialtyAdjustScreen = () => {
                 <span className="text-xs px-2 py-1 bg-white/20 rounded">Base: {baseAmount}mL</span>
                 <span className="text-xs px-2 py-1 bg-white/20 rounded">Fixed: {fixedVolume}mL</span>
              </div>
+             {currentTotal > MAX_VOLUME_ML && (
+                 <div className="mt-2 text-xs bg-red-500 text-white px-2 py-1 rounded">Error: >100mL</div>
+             )}
            </div>
         </div>
 

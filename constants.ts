@@ -1,8 +1,6 @@
 import { Ingredient, SpecialtyDrink, DrinkRecipe } from './types';
 
 // Bluetooth Configuration
-// Note: HC-05 is Bluetooth Classic, which has limited Web Bluetooth support.
-// We default to standard BLE UART UUIDs often used by HM-10/AT-09 modules which are drop-in replacements for Arduino.
 export const BLE_SERVICE_UUID = 0xFFE0; 
 export const BLE_CHARACTERISTIC_UUID = 0xFFE1;
 
@@ -24,10 +22,10 @@ export const SPECIALTY_DRINKS: SpecialtyDrink[] = [
     description: 'Refreshing water with a zesty lemon kick.',
     baseIngredient: Ingredient.WATER,
     flavorIngredient: Ingredient.LEMON,
-    fixedIngredients: { [Ingredient.SUGAR]: 15 },
+    fixedIngredients: { [Ingredient.SUGAR]: 5 }, // Reduced from 15
     color: 'from-yellow-200 to-yellow-400',
     minFlavor: 5,   
-    maxFlavor: 30,  // Avail 85. Flavor 30 means Base 55. Base > Flavor.
+    maxFlavor: 15,  // Reduced from 30. Syrups are potent.
   },
   {
     id: 'lemon-soda',
@@ -35,10 +33,10 @@ export const SPECIALTY_DRINKS: SpecialtyDrink[] = [
     description: 'Sparkling soda with a twist of lemon.',
     baseIngredient: Ingredient.SODA,
     flavorIngredient: Ingredient.LEMON,
-    fixedIngredients: { [Ingredient.SUGAR]: 15 },
+    fixedIngredients: { [Ingredient.SUGAR]: 15 }, // Increased by 10mL as requested
     color: 'from-green-200 to-yellow-300',
     minFlavor: 5,
-    maxFlavor: 30, // Avail 85. Flavor 30 means Base 55.
+    maxFlavor: 10, // Reduced cap for lemon concentrate
   },
   {
     id: 'plain-cola',
@@ -48,8 +46,8 @@ export const SPECIALTY_DRINKS: SpecialtyDrink[] = [
     flavorIngredient: Ingredient.COLA,
     fixedIngredients: {}, 
     color: 'from-red-900 to-amber-900',
-    minFlavor: 10, 
-    maxFlavor: 40, // Avail 100. Flavor 40 means Base 60.
+    minFlavor: 5, // Cola Concentrate Range
+    maxFlavor: 10, 
   },
   {
     id: 'masala-cola',
@@ -57,11 +55,10 @@ export const SPECIALTY_DRINKS: SpecialtyDrink[] = [
     description: 'Spiced cola with a soda kick.',
     baseIngredient: Ingredient.SODA,
     flavorIngredient: Ingredient.COLA,
-    // Using Lemon as the "Masala" kick substitute
-    fixedIngredients: { [Ingredient.LEMON]: 10 }, 
+    fixedIngredients: { [Ingredient.LEMON]: 5 }, // Reduced kick
     color: 'from-amber-700 to-red-900',
-    minFlavor: 10,
-    maxFlavor: 35, // Avail 90. Flavor 35 means Base 55.
+    minFlavor: 5, // Cola Concentrate Range
+    maxFlavor: 10, 
   },
   {
     id: 'citrus-cola',
@@ -69,10 +66,10 @@ export const SPECIALTY_DRINKS: SpecialtyDrink[] = [
     description: 'Cola infused with zesty orange notes.',
     baseIngredient: Ingredient.SODA,
     flavorIngredient: Ingredient.ORANGE, 
-    fixedIngredients: { [Ingredient.COLA]: 40 }, // High fixed content
+    fixedIngredients: { [Ingredient.COLA]: 10 }, // Reduced fixed Cola amount
     color: 'from-orange-500 to-amber-900',
     minFlavor: 5,
-    maxFlavor: 25, // Avail 60. Flavor 25 means Base 35.
+    maxFlavor: 15, // Orange syrup is thick/potent
   },
   {
     id: 'orange-cooler',
@@ -80,10 +77,10 @@ export const SPECIALTY_DRINKS: SpecialtyDrink[] = [
     description: 'Bubbly soda with fresh orange juice.',
     baseIngredient: Ingredient.SODA,
     flavorIngredient: Ingredient.ORANGE,
-    fixedIngredients: { [Ingredient.SUGAR]: 10 },
+    fixedIngredients: { [Ingredient.SUGAR]: 5 },
     color: 'from-orange-400 to-red-400',
-    minFlavor: 10,
-    maxFlavor: 35, // Avail 90. Flavor 35 means Base 55.
+    minFlavor: 5,
+    maxFlavor: 20, 
   },
 ];
 

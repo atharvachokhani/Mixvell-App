@@ -130,6 +130,37 @@ export class BluetoothService {
       throw error;
     }
   }
+
+  /**
+   * Sends a ping (0 values) to test the connection.
+   */
+  async testConnection(): Promise<void> {
+    if (this.isSimulated) {
+      console.log('SIMULATED PING');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return;
+    }
+
+    const commandString = "0,0,0,0,0,0\n";
+
+    if (!this.writer) {
+      if (this.port && this.port.writable && !this.port.writable.locked) {
+         const textEncoder = new TextEncoderStream();
+         textEncoder.readable.pipeTo(this.port.writable);
+         this.writer = textEncoder.writable.getWriter();
+      } else {
+         throw new Error('Not connected to a device.');
+      }
+    }
+
+    try {
+      await this.writer.write(commandString);
+      console.log('Sent ping:', commandString);
+    } catch (error) {
+      console.error('Failed to send ping:', error);
+      throw error;
+    }
+  }
 }
 
 export const bluetoothService = new BluetoothService();
