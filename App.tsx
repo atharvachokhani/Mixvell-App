@@ -428,7 +428,7 @@ const SpecialtyAdjustScreen = () => {
                 <span className="text-xs px-2 py-1 bg-white/20 rounded">Fixed: {fixedVolume}mL</span>
              </div>
              {currentTotal > MAX_VOLUME_ML && (
-                 <div className="mt-2 text-xs bg-red-500 text-white px-2 py-1 rounded">Error: &gt;100mL</div>
+                 <div className="mt-2 text-xs bg-red-500 text-white px-2 py-1 rounded">Error: {'>'}100mL</div>
              )}
            </div>
         </div>
