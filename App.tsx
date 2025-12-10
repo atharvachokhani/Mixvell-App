@@ -234,6 +234,8 @@ const CustomMixScreen = () => {
     if ([Ingredient.WATER, Ingredient.COLA, Ingredient.SODA].includes(ing)) {
       return 20;
     }
+    // Updated step sizes: 10mL for juices, 5mL for syrups/cola-concentrate
+    if (ing === Ingredient.COLA) return 5; 
     return 5;
   };
 
@@ -426,7 +428,7 @@ const SpecialtyAdjustScreen = () => {
                 <span className="text-xs px-2 py-1 bg-white/20 rounded">Fixed: {fixedVolume}mL</span>
              </div>
              {currentTotal > MAX_VOLUME_ML && (
-                 <div className="mt-2 text-xs bg-red-500 text-white px-2 py-1 rounded">Error: >100mL</div>
+                 <div className="mt-2 text-xs bg-red-500 text-white px-2 py-1 rounded">Error: &gt;100mL</div>
              )}
            </div>
         </div>
