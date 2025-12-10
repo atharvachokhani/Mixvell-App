@@ -76,9 +76,6 @@ export class BluetoothService {
 
   disconnect() {
     if (this.port) {
-      // Closing serial ports properly is complex in JS, usually we just let the page reload handle it
-      // or implement the full lock release logic. For this simple app, we just nullify.
-      // To actually close: await this.writer.close(); await this.port.close();
       this.port = null;
       this.writer = null;
     }
@@ -94,56 +91,45 @@ export class BluetoothService {
    * Format: Water,Cola,Soda,Sugar,Lemon,Orange\n
    */
   async dispenseDrink(recipe: DrinkRecipe): Promise<void> {
+    // Ensure all values are Integers
     const values = [
-      recipe[Ingredient.WATER],
-      recipe[Ingredient.COLA],
-      recipe[Ingredient.SODA],
-      recipe[Ingredient.SUGAR],
-      recipe[Ingredient.LEMON],
-      recipe[Ingredient.ORANGE],
+      Math.round(recipe[Ingredient.WATER]),
+      Math.round(recipe[Ingredient.COLA]),
+      Math.round(recipe[Ingredient.SODA]),
+      Math.round(recipe[Ingredient.SUGAR]),
+      Math.round(recipe[Ingredient.LEMON]),
+      Math.round(recipe[Ingredient.ORANGE]),
     ];
 
     const commandString = values.join(',') + '\n';
 
-    if (this.isSimulated) {
-      console.log('SIMULATED OUTPUT:', commandString);
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Fake transmission time
-      return;
-    }
+    await this.sendCommand(commandString);
+  }
 
-    if (!this.writer) {
-      // Try to recover if port is there but writer missing (rare)
-      if (this.port && this.port.writable && !this.port.writable.locked) {
-         const textEncoder = new TextEncoderStream();
-         textEncoder.readable.pipeTo(this.port.writable);
-         this.writer = textEncoder.writable.getWriter();
-      } else {
-         throw new Error('Not connected to a device.');
-      }
-    }
-
-    try {
-      await this.writer.write(commandString);
-      console.log('Sent command:', commandString);
-    } catch (error) {
-      console.error('Failed to send command:', error);
-      throw error;
-    }
+  /**
+   * Sends "CLEAN" command to Arduino.
+   * Triggers a 20s flush cycle on all pumps.
+   */
+  async cleanSystem(): Promise<void> {
+    await this.sendCommand("CLEAN\n");
   }
 
   /**
    * Sends a ping (0 values) to test the connection.
    */
   async testConnection(): Promise<void> {
+    await this.sendCommand("0,0,0,0,0,0\n");
+  }
+
+  private async sendCommand(cmd: string): Promise<void> {
     if (this.isSimulated) {
-      console.log('SIMULATED PING');
+      console.log('SIMULATED OUTPUT:', cmd);
       await new Promise(resolve => setTimeout(resolve, 500));
       return;
     }
 
-    const commandString = "0,0,0,0,0,0\n";
-
     if (!this.writer) {
+      // Recovery attempt
       if (this.port && this.port.writable && !this.port.writable.locked) {
          const textEncoder = new TextEncoderStream();
          textEncoder.readable.pipeTo(this.port.writable);
@@ -154,10 +140,10 @@ export class BluetoothService {
     }
 
     try {
-      await this.writer.write(commandString);
-      console.log('Sent ping:', commandString);
+      await this.writer.write(cmd);
+      console.log('Sent command:', cmd);
     } catch (error) {
-      console.error('Failed to send ping:', error);
+      console.error('Failed to send command:', error);
       throw error;
     }
   }

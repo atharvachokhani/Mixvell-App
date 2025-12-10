@@ -7,15 +7,15 @@ import { Button } from './components/Button';
 import { IngredientStepper } from './components/IngredientStepper';
 import { EMPTY_RECIPE, MAX_VOLUME_ML, SPECIALTY_DRINKS, INGREDIENT_COLORS } from './constants';
 import { ARDUINO_SKETCH } from './services/firmwareTemplate';
-import { Zap, RotateCcw, CupSoda, Laptop, Smartphone, AlertTriangle, BarChart3, Trash2, CheckCircle, Martini, Code, Copy, Check } from 'lucide-react';
+import { Zap, RotateCcw, CupSoda, Laptop, Smartphone, AlertTriangle, BarChart3, Trash2, CheckCircle, Martini, Code, Copy, Check, Droplets } from 'lucide-react';
 
 // 1. Connection Screen
 const ConnectScreen = () => {
   const navigate = useNavigate();
   const [status, setStatus] = useState<BluetoothState>('DISCONNECTED');
   const [error, setError] = useState('');
+  const [showMaintenance, setShowMaintenance] = useState(false);
 
-  // Check if we are already connected (e.g. navigated back)
   useEffect(() => {
     if (bluetoothService.isConnected()) {
       setStatus('CONNECTED');
@@ -23,7 +23,6 @@ const ConnectScreen = () => {
   }, []);
 
   const handleConnect = async () => {
-    // If already connected, just proceed
     if (bluetoothService.isConnected()) {
       navigate('/menu');
       return;
@@ -41,15 +40,13 @@ const ConnectScreen = () => {
       
       let msg = e.message || 'Connection failed';
       
-      // Friendly error mapping for Web Serial issues
       if (msg.includes('Failed to open serial port') || msg.includes('Access denied')) {
         msg = '❌ Port Busy or Blocked.\n\n1. Close Arduino IDE or Serial Monitor.\n2. Ensure no other browser tabs are connected.\n3. Try un-pairing and re-pairing the Bluetooth device.';
       } else if (msg.includes('No port selected')) {
-        msg = ''; // User cancelled, just reset
+        msg = '';
         setStatus('DISCONNECTED');
         return;
       } else if (msg.includes('The port is already open')) {
-         // This is actually a success case technically, we just caught the re-open attempt
          console.log("Port was already open, proceeding.");
          setStatus('CONNECTED');
          setTimeout(() => navigate('/menu'), 800);
@@ -80,10 +77,25 @@ const ConnectScreen = () => {
     }
   };
 
+  const handleCleaning = async () => {
+    if (!bluetoothService.isConnected()) {
+      setError("Connect to device first to run cleaning.");
+      return;
+    }
+    if (confirm("START CLEANING CYCLE?\n\nPlace a large bowl under the nozzle.\nThis will run ALL pumps for 20 seconds each.\n\nContinue?")) {
+      try {
+        await bluetoothService.cleanSystem();
+        alert("Cleaning cycle started.\nPlease wait ~2 minutes.");
+      } catch (e) {
+        setError("Failed to start cleaning.");
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center bg-[url('https://picsum.photos/1920/1080?blur=10')] bg-cover bg-center relative">
       <div className="absolute inset-0 bg-slate-900/85 backdrop-blur-sm"></div>
-      <div className="relative z-10 max-w-md w-full glass-panel p-8 rounded-2xl shadow-2xl border border-neon-blue/30">
+      <div className="relative z-10 max-w-md w-full glass-panel p-8 rounded-2xl shadow-2xl border border-neon-blue/30 overflow-y-auto max-h-[90vh]">
         <div className="mb-8 flex justify-center">
           <div className={`p-6 rounded-full ${status === 'CONNECTING' ? 'bg-blue-500/20 animate-pulse' : 'bg-slate-800'} border-2 border-neon-blue shadow-[0_0_20px_rgba(0,243,255,0.2)] transition-all duration-500`}>
             <Martini 
@@ -101,34 +113,6 @@ const ConnectScreen = () => {
           </div>
         )}
 
-        <div className="bg-slate-800/50 rounded-lg p-4 mb-6 text-xs text-left text-slate-400 border border-slate-700 overflow-y-auto max-h-48">
-          <p className="font-bold text-slate-300 mb-2 flex items-center gap-2">
-            <Laptop size={14} /> Desktop (Windows / Mac)
-          </p>
-          <ol className="list-decimal ml-4 space-y-2 mb-4">
-            <li>
-              <span className="text-white font-semibold">Pair First:</span> Go to Bluetooth settings and pair with <strong>HC-05</strong> (Pin: 1234).
-            </li>
-            <li>
-              <span className="text-white font-semibold">Connect:</span> Click the button below.
-            </li>
-            <li>
-              <span className="text-white font-semibold">Select Port:</span>
-              <ul className="list-disc ml-2 mt-1 space-y-1 text-slate-500">
-                <li><strong>Windows:</strong> Select 'Standard Serial over Bluetooth' (COM#).</li>
-                <li><strong>Mac:</strong> Look for <code>cu.HC-05</code>. If missing, forget device and re-pair.</li>
-              </ul>
-            </li>
-          </ol>
-          
-          <p className="font-bold text-slate-300 mb-2 flex items-center gap-2">
-            <Smartphone size={14} /> Mobile (Android)
-          </p>
-          <p className="ml-4">
-            Wireless Bluetooth is <strong className="text-red-400">not</strong> supported in Chrome for HC-05. Please use a <strong>USB OTG Cable</strong> to connect Arduino directly to your phone.
-          </p>
-        </div>
-
         <div className="flex flex-col gap-3">
           <Button 
             variant="neon" 
@@ -140,28 +124,47 @@ const ConnectScreen = () => {
           </Button>
 
           {status === 'CONNECTED' && (
-             <button
-               onClick={handleTestConnection}
-               className="text-xs text-neon-blue underline"
-             >
-               Test Connection (Ping LED)
-             </button>
+             <div className="flex gap-2 justify-center text-xs">
+                 <button onClick={handleTestConnection} className="text-neon-blue underline">
+                   Test Connection
+                 </button>
+             </div>
           )}
 
-          <button
-            onClick={() => navigate('/firmware')}
-            className="flex items-center justify-center gap-2 py-3 w-full rounded-lg border border-slate-700 hover:bg-slate-800 transition-colors text-slate-400 text-sm"
-          >
-            <Code size={16} /> Get Arduino Firmware
-          </button>
+          <div className="mt-4 border-t border-slate-700/50 pt-4">
+            <button
+                onClick={() => setShowMaintenance(!showMaintenance)}
+                className="text-xs text-slate-500 hover:text-white flex items-center justify-center gap-1 w-full"
+            >
+                {showMaintenance ? 'Hide Maintenance' : 'Show Maintenance / Firmware'}
+            </button>
+            
+            {showMaintenance && (
+                <div className="mt-3 flex flex-col gap-2 animate-in fade-in slide-in-from-top-2">
+                    <button
+                        onClick={() => navigate('/firmware')}
+                        className="flex items-center justify-center gap-2 py-2 w-full rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors text-slate-300 text-sm"
+                    >
+                        <Code size={14} /> Get Firmware
+                    </button>
+                    
+                    <button
+                        onClick={handleCleaning}
+                        className="flex items-center justify-center gap-2 py-2 w-full rounded-lg bg-orange-900/30 border border-orange-500/30 hover:bg-orange-900/50 text-orange-200 text-sm transition-colors"
+                    >
+                        <Droplets size={14} /> Start Cleaning Cycle (20s)
+                    </button>
+                </div>
+            )}
+          </div>
         </div>
 
-        <div className="mt-4">
+        <div className="mt-6">
           <button 
             onClick={handleSimulate}
-            className="text-slate-500 text-sm hover:text-white underline underline-offset-4"
+            className="text-slate-600 text-xs hover:text-slate-400"
           >
-            No hardware? Simulation Mode
+            Debug: Enter Simulation Mode
           </button>
         </div>
       </div>
@@ -174,7 +177,6 @@ const MenuScreen = () => {
   const navigate = useNavigate();
   const [tapCount, setTapCount] = useState(0);
 
-  // Discrete Admin Trigger: 5 taps on the title
   const handleTitleClick = () => {
     const newCount = tapCount + 1;
     setTapCount(newCount);
@@ -221,62 +223,44 @@ const MenuScreen = () => {
   );
 };
 
-// 3. Make Your Own Screen
+// 3. Custom Mix Screen
 const CustomMixScreen = () => {
   const navigate = useNavigate();
   const [recipe, setRecipe] = useState<DrinkRecipe>({...EMPTY_RECIPE});
   
-  // Calculate total volume
   const currentTotal = (Object.values(recipe) as number[]).reduce((a, b) => a + b, 0);
 
-  // Helper to determine step size per ingredient
   const getStepSize = (ing: Ingredient) => {
-    // Water, Cola, Soda = 20mL steps
     if ([Ingredient.WATER, Ingredient.COLA, Ingredient.SODA].includes(ing)) {
       return 20;
     }
-    // Others = 5mL steps (Reduced from 10mL for finer control of thick syrups)
     return 5;
   };
 
   const handleIngredientChange = (ingredient: Ingredient, value: number) => {
-    // 1. Set the new value for this ingredient directly
     let newRecipe = { ...recipe, [ingredient]: value };
-    
-    // 2. Calculate the new sum
     let newTotal = (Object.values(newRecipe) as number[]).reduce((a, b) => a + b, 0);
 
-    // 3. If total > 100, we need to subtract from other ingredients (Auto-balance)
     if (newTotal > MAX_VOLUME_ML) {
       let overflow = newTotal - MAX_VOLUME_ML;
-      
-      // Get other active ingredients sorted by largest volume first
       const otherIngredients = (Object.keys(newRecipe) as Ingredient[])
         .filter(k => k !== ingredient && newRecipe[k] > 0)
         .sort((a, b) => newRecipe[b] - newRecipe[a]);
 
       let canBalance = false;
-      
-      // Try to reduce others
       for (const other of otherIngredients) {
         if (overflow <= 0) break;
-        
         const available = newRecipe[other];
         const toTake = Math.min(available, overflow);
-        
         if (toTake > 0) canBalance = true;
-
         newRecipe[other] -= toTake;
         overflow -= toTake;
       }
       
-      // If we still have overflow, it means we couldn't balance it out (other ingredients are empty)
-      // So we must clamp the target ingredient down.
       if (overflow > 0) {
         newRecipe[ingredient] -= overflow;
       }
     }
-
     setRecipe(newRecipe);
   };
 
@@ -374,40 +358,24 @@ const SpecialtyAdjustScreen = () => {
   const location = useLocation();
   const drinkId = location.pathname.split('/').pop();
   const drink = SPECIALTY_DRINKS.find(d => d.id === drinkId);
-
-  // Initialize state only once with default mid-point if possible
   const [flavorAmount, setFlavorAmount] = useState<number>(0);
 
   useEffect(() => {
     if (drink) {
-      // Start at min flavor (weakest) to be safe with potent syrups
-      let safeStart = drink.minFlavor;
-      setFlavorAmount(safeStart);
+      setFlavorAmount(drink.minFlavor);
     }
   }, [drink]);
 
   if (!drink) return <div>Drink not found</div>;
 
-  // 1. Calculate Fixed Volume (Sugar, additives)
   const fixedVolume = Object.values(drink.fixedIngredients).reduce((a, b) => a + (b || 0), 0);
-  
-  // 2. Calculate Available Volume for (Flavor + Base)
   const availableVolume = MAX_VOLUME_ML - fixedVolume;
-
-  // 3. Define Constraints for Flavor
   const minFlavor = drink.minFlavor;
   const maxFlavor = drink.maxFlavor;
-
-  // 4. Calculate Current Base Amount (Derived)
-  // Ensure we don't go negative on base calculation
   const baseAmount = Math.max(0, availableVolume - flavorAmount);
-
-  // Safety check for Total visual
   const currentTotal = baseAmount + flavorAmount + fixedVolume;
 
   const handleFlavorChange = (val: number) => {
-    // The IngredientStepper handles min/max constraints before calling this.
-    // But we add a safety check just in case.
     let newVal = val;
     if (newVal < minFlavor) newVal = minFlavor;
     if (newVal > maxFlavor) newVal = maxFlavor;
@@ -417,25 +385,18 @@ const SpecialtyAdjustScreen = () => {
   const handleDispense = async () => {
     const recipe = { ...EMPTY_RECIPE };
     
-    // Add Fixed Ingredients
     Object.entries(drink.fixedIngredients).forEach(([ing, amt]) => {
       recipe[ing as Ingredient] = (recipe[ing as Ingredient] || 0) + (amt || 0);
     });
 
-    // Add Variable Flavor
     recipe[drink.flavorIngredient] = (recipe[drink.flavorIngredient] || 0) + flavorAmount;
-    
-    // Add Variable Base
     recipe[drink.baseIngredient] = (recipe[drink.baseIngredient] || 0) + baseAmount;
     
-    // Final Integer Rounding Safety
     Object.keys(recipe).forEach(key => {
         // @ts-ignore
         recipe[key] = Math.round(recipe[key]);
     });
     
-    console.log("Sending Recipe:", recipe);
-
     try {
       await bluetoothService.dispenseDrink(recipe);
       statsService.recordDispense(recipe);
@@ -476,11 +437,11 @@ const SpecialtyAdjustScreen = () => {
             label={`Adjust Flavor Intensity`}
             value={flavorAmount}
             max={MAX_VOLUME_ML}
-            step={5} // 5mL increment for specialty
+            step={5} 
             minConstraint={minFlavor}
             maxConstraint={maxFlavor}
             onChange={handleFlavorChange}
-            isRelative={true} // Enable relative scaling for the visual bar
+            isRelative={true}
           />
           
           <IngredientStepper 
@@ -488,12 +449,11 @@ const SpecialtyAdjustScreen = () => {
              label={`${drink.baseIngredient} (Auto-Adjusts)`}
              value={baseAmount}
              max={MAX_VOLUME_ML}
-             onChange={() => {}} // No-op
+             onChange={() => {}} 
              colorClass="bg-blue-300"
-             readOnly={true} // Locked
+             readOnly={true} 
           />
 
-          {/* Fixed Ingredients Display */}
           {Object.entries(drink.fixedIngredients).map(([ing, amt]) => (
              <div key={ing} className="opacity-60 grayscale">
                 <IngredientStepper 
@@ -541,7 +501,7 @@ const SuccessScreen = () => {
   );
 };
 
-// 7. Stats Screen (Discrete)
+// 7. Stats Screen
 const StatsScreen = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState<AppStats>(statsService.getStats());
@@ -553,7 +513,6 @@ const StatsScreen = () => {
     }
   };
 
-  // Find max value for scaling the bars
   const maxVolume = Math.max(...(Object.values(stats.ingredientUsage) as number[]), 1);
 
   return (
@@ -676,7 +635,6 @@ const FirmwareScreen = () => {
   );
 };
 
-// Main App Component with Routes
 const App = () => {
   return (
     <HashRouter>

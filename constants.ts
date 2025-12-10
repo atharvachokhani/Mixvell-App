@@ -33,10 +33,10 @@ export const SPECIALTY_DRINKS: SpecialtyDrink[] = [
     description: 'Sparkling soda with a twist of lemon.',
     baseIngredient: Ingredient.SODA,
     flavorIngredient: Ingredient.LEMON,
-    fixedIngredients: { [Ingredient.SUGAR]: 15 }, // Increased by 10mL as requested
+    fixedIngredients: { [Ingredient.SUGAR]: 20 }, // UPDATED: 20mL Sugar
     color: 'from-green-200 to-yellow-300',
-    minFlavor: 5,
-    maxFlavor: 10, // Reduced cap for lemon concentrate
+    minFlavor: 15, // UPDATED: Min 15mL
+    maxFlavor: 25, // UPDATED: Max 25mL
   },
   {
     id: 'plain-cola',
