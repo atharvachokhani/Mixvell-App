@@ -1,8 +1,8 @@
 export const ARDUINO_SKETCH = `
 /*
- * Mixvell Mocktail Dispenser Firmware (v7.0 - Pineapple Edition)
+ * Mixvell Mocktail Dispenser Firmware (v8.0 - No Pineapple)
  * -----------------------------------
- * Hardware: Arduino Uno/Nano, HC-05 Bluetooth, 6-Channel Relay
+ * Hardware: Arduino Uno/Nano, HC-05 Bluetooth, 5/6-Channel Relay
  * 
  * PINS MAPPING:
  * 2: Soda
@@ -10,7 +10,6 @@ export const ARDUINO_SKETCH = `
  * 4: Sugar Syrup
  * 5: Lemon Mix
  * 6: Orange Juice
- * 7: Pineapple Juice
  */
 
 // Pins definitions
@@ -19,18 +18,16 @@ const int PIN_COLA   = 3;
 const int PIN_SUGAR  = 4;
 const int PIN_LEMON  = 5;
 const int PIN_ORANGE = 6;
-const int PIN_PINEAPPLE = 7;
 
 // --- CALIBRATION CONFIGURATION ---
 // Milliseconds per mL. Increase this value for thicker liquids.
 // Soda/Water = ~100. Syrups = ~150-250.
-int pumpDelays[6] = {
+int pumpDelays[5] = {
   100, // Pin 2 (Soda) - Thin
   150, // Pin 3 (Cola) - Medium Concentrate
   200, // Pin 4 (Sugar Syrup) - THICK
   200, // Pin 5 (Lemon Mix) - THICK
-  200, // Pin 6 (Orange Juice) - THICK
-  200  // Pin 7 (Pineapple Juice) - THICK
+  200  // Pin 6 (Orange Juice) - THICK
 };
 
 // --- GLOBALS ---
@@ -50,7 +47,6 @@ void setup() {
   pinMode(PIN_SUGAR, OUTPUT);
   pinMode(PIN_LEMON, OUTPUT);
   pinMode(PIN_ORANGE, OUTPUT);
-  pinMode(PIN_PINEAPPLE, OUTPUT);
 
   // Turn off all relays (Active LOW)
   digitalWrite(PIN_SODA, HIGH);
@@ -58,9 +54,8 @@ void setup() {
   digitalWrite(PIN_SUGAR, HIGH);
   digitalWrite(PIN_LEMON, HIGH);
   digitalWrite(PIN_ORANGE, HIGH);
-  digitalWrite(PIN_PINEAPPLE, HIGH);
 
-  Serial.println("Mixvell Dispenser Ready (v7.0).");
+  Serial.println("Mixvell Dispenser Ready (v8.0).");
 }
 
 void loop() {
@@ -98,19 +93,19 @@ void processCommand(String command) {
   }
 
   // STANDARD DISPENSE
-  // Index 0=Soda, 1=Cola, 2=Sugar, 3=Lemon, 4=Orange, 5=Pineapple
-  int targetML[6] = {0, 0, 0, 0, 0, 0};
+  // Index 0=Soda, 1=Cola, 2=Sugar, 3=Lemon, 4=Orange
+  int targetML[5] = {0, 0, 0, 0, 0};
 
   // Parse CSV
-  int parsedCount = sscanf(command.c_str(), "%d,%d,%d,%d,%d,%d", 
+  int parsedCount = sscanf(command.c_str(), "%d,%d,%d,%d,%d", 
                            &targetML[0], &targetML[1], &targetML[2], 
-                           &targetML[3], &targetML[4], &targetML[5]);
+                           &targetML[3], &targetML[4]);
 
   Serial.print("Parsed items: "); Serial.println(parsedCount);
   
-  int pins[6] = {PIN_SODA, PIN_COLA, PIN_SUGAR, PIN_LEMON, PIN_ORANGE, PIN_PINEAPPLE};
+  int pins[5] = {PIN_SODA, PIN_COLA, PIN_SUGAR, PIN_LEMON, PIN_ORANGE};
 
-  for(int i=0; i<6; i++) {
+  for(int i=0; i<5; i++) {
      if (targetML[i] > 0) {
         pump(pins[i], targetML[i], pumpDelays[i]);
      }
@@ -121,9 +116,9 @@ void processCommand(String command) {
 
 void runCleaningCycle() {
   Serial.println("STARTING CLEANING CYCLE...");
-  int pins[6] = {PIN_SODA, PIN_COLA, PIN_SUGAR, PIN_LEMON, PIN_ORANGE, PIN_PINEAPPLE};
+  int pins[5] = {PIN_SODA, PIN_COLA, PIN_SUGAR, PIN_LEMON, PIN_ORANGE};
   
-  for(int i=0; i<6; i++) {
+  for(int i=0; i<5; i++) {
     Serial.print("Cleaning Pump on Pin "); Serial.println(pins[i]);
     
     digitalWrite(pins[i], LOW); // ON

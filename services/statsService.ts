@@ -17,7 +17,6 @@ const INITIAL_STATS: AppStats = {
     [Ingredient.SUGAR]: 0,
     [Ingredient.LEMON]: 0,
     [Ingredient.ORANGE]: 0,
-    [Ingredient.PINEAPPLE]: 0,
   },
 };
 
@@ -42,7 +41,10 @@ export const statsService = {
       let recipeTotal = 0;
       Object.entries(recipe).forEach(([key, value]) => {
         const ing = key as Ingredient;
-        newStats.ingredientUsage[ing] = (newStats.ingredientUsage[ing] || 0) + (value || 0);
+        // Check if ingredient exists in current tracking (handles removal of old ingredients)
+        if (newStats.ingredientUsage[ing] !== undefined) {
+             newStats.ingredientUsage[ing] = (newStats.ingredientUsage[ing] || 0) + (value || 0);
+        }
         recipeTotal += (value || 0);
       });
 

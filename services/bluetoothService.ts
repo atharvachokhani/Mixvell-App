@@ -88,7 +88,7 @@ export class BluetoothService {
 
   /**
    * Sends the drink recipe to the Arduino via Serial.
-   * Format: Soda,Cola,Sugar,Lemon,Orange,Pineapple\n
+   * Format: Soda,Cola,Sugar,Lemon,Orange\n
    */
   async dispenseDrink(recipe: DrinkRecipe): Promise<void> {
     // Ensure all values are Integers
@@ -98,7 +98,6 @@ export class BluetoothService {
       Math.round(recipe[Ingredient.SUGAR]),
       Math.round(recipe[Ingredient.LEMON]),
       Math.round(recipe[Ingredient.ORANGE]),
-      Math.round(recipe[Ingredient.PINEAPPLE]),
     ];
 
     const commandString = values.join(',') + '\n';
@@ -118,7 +117,7 @@ export class BluetoothService {
    * Sends a ping (0 values) to test the connection.
    */
   async testConnection(): Promise<void> {
-    await this.sendCommand("0,0,0,0,0,0\n");
+    await this.sendCommand("0,0,0,0,0\n");
   }
 
   private async sendCommand(cmd: string): Promise<void> {

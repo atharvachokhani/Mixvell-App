@@ -168,7 +168,7 @@ const MenuScreen = () => {
             <Zap size={180} />
           </div>
           <h3 className="text-3xl font-bold text-white mb-2 relative z-10">Make Your Own</h3>
-          <p className="text-slate-400 text-lg relative z-10">Mix Pineapple, Orange & Soda to your liking.</p>
+          <p className="text-slate-400 text-lg relative z-10">Mix Orange, Cola & Soda to your liking.</p>
         </div>
 
         <div 
@@ -215,8 +215,8 @@ const CustomMixScreen = () => {
   };
 
   // Group ingredients
-  const baseLiquids = [Ingredient.SODA, Ingredient.COLA];
-  const juices = [Ingredient.ORANGE, Ingredient.PINEAPPLE];
+  const baseLiquids = [Ingredient.SODA];
+  const flavors = [Ingredient.COLA, Ingredient.ORANGE];
   const enhancers = [Ingredient.LEMON, Ingredient.SUGAR];
 
   return (
@@ -248,13 +248,13 @@ const CustomMixScreen = () => {
           </div>
         </div>
 
-        {/* Column 2: Juices */}
+        {/* Column 2: Flavors */}
         <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800">
           <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6 pl-1 flex items-center gap-2">
-             <div className="w-1 h-4 bg-orange-500 rounded-full"></div> Natural Juices
+             <div className="w-1 h-4 bg-orange-500 rounded-full"></div> Flavors & Syrups
           </h3>
           <div className="space-y-3">
-            {juices.map(ing => (
+            {flavors.map(ing => (
               <IngredientStepper
                 key={ing}
                 ingredient={ing}
