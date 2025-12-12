@@ -47,7 +47,7 @@ export const SPECIALTY_DRINKS: SpecialtyDrink[] = [
     flavorIngredient: Ingredient.LEMON, 
     fixedIngredients: {},
     color: 'from-red-900 to-black',
-    minFlavor: 0, // Can be 0 for pure cola
+    minFlavor: 0, 
     maxFlavor: 10,
   },
   {
@@ -61,6 +61,28 @@ export const SPECIALTY_DRINKS: SpecialtyDrink[] = [
     minFlavor: 15,
     maxFlavor: 30, 
   },
+  {
+    id: 'tropical-cola',
+    name: 'Tropical Cola',
+    description: 'An exotic fusion of Cola and sweet Pineapple.',
+    baseIngredient: Ingredient.COLA,
+    flavorIngredient: Ingredient.PINEAPPLE,
+    fixedIngredients: { [Ingredient.LEMON]: 5 },
+    color: 'from-amber-700 to-yellow-600',
+    minFlavor: 10,
+    maxFlavor: 25,
+  },
+  {
+    id: 'guwahati-punch',
+    name: 'Guwahati Fruit Punch',
+    description: 'A winter special blend of Orange and Pineapple.',
+    baseIngredient: Ingredient.SODA,
+    flavorIngredient: Ingredient.ORANGE,
+    fixedIngredients: { [Ingredient.PINEAPPLE]: 20, [Ingredient.SUGAR]: 5 },
+    color: 'from-orange-500 to-red-400',
+    minFlavor: 15,
+    maxFlavor: 30,
+  }
 ];
 
 export const EMPTY_RECIPE: DrinkRecipe = {
