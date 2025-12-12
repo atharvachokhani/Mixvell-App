@@ -12,12 +12,12 @@ const INITIAL_STATS: AppStats = {
   totalDrinks: 0,
   totalVolume: 0,
   ingredientUsage: {
-    [Ingredient.WATER]: 0,
-    [Ingredient.COLA]: 0,
     [Ingredient.SODA]: 0,
+    [Ingredient.COLA]: 0,
     [Ingredient.SUGAR]: 0,
     [Ingredient.LEMON]: 0,
     [Ingredient.ORANGE]: 0,
+    [Ingredient.PINEAPPLE]: 0,
   },
 };
 

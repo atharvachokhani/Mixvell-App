@@ -1,31 +1,36 @@
 export const ARDUINO_SKETCH = `
 /*
- * Mixvell Mocktail Dispenser Firmware (v5.0 - Cleaning Mode)
+ * Mixvell Mocktail Dispenser Firmware (v7.0 - Pineapple Edition)
  * -----------------------------------
  * Hardware: Arduino Uno/Nano, HC-05 Bluetooth, 6-Channel Relay
  * 
- * FEATURES:
- * - Per-pump calibration (Viscosity support)
- * - Cleaning Mode (Command: "CLEAN")
+ * PINS MAPPING:
+ * 2: Soda
+ * 3: Cola
+ * 4: Sugar Syrup
+ * 5: Lemon Mix
+ * 6: Orange Juice
+ * 7: Pineapple Juice
  */
 
 // Pins definitions
-const int PIN_WATER  = 2;
+const int PIN_SODA   = 2;
 const int PIN_COLA   = 3;
-const int PIN_SODA   = 4;
-const int PIN_SUGAR  = 5;
-const int PIN_LEMON  = 6;
-const int PIN_ORANGE = 7;
+const int PIN_SUGAR  = 4;
+const int PIN_LEMON  = 5;
+const int PIN_ORANGE = 6;
+const int PIN_PINEAPPLE = 7;
 
 // --- CALIBRATION CONFIGURATION ---
-// Milliseconds per mL.
+// Milliseconds per mL. Increase this value for thicker liquids.
+// Soda/Water = ~100. Syrups = ~150-250.
 int pumpDelays[6] = {
-  100, // Pin 2 (Water) - Thin
-  150, // Pin 3 (Cola) - Medium (Concentrate)
-  100, // Pin 4 (Soda) - Thin
-  200, // Pin 5 (Sugar Syrup) - THICK
-  200, // Pin 6 (Lemon Mix) - THICK
-  200  // Pin 7 (Orange Juice) - THICK
+  100, // Pin 2 (Soda) - Thin
+  150, // Pin 3 (Cola) - Medium Concentrate
+  200, // Pin 4 (Sugar Syrup) - THICK
+  200, // Pin 5 (Lemon Mix) - THICK
+  200, // Pin 6 (Orange Juice) - THICK
+  200  // Pin 7 (Pineapple Juice) - THICK
 };
 
 // --- GLOBALS ---
@@ -40,22 +45,22 @@ void setup() {
   digitalWrite(LED_BUILTIN, LOW);
 
   // Initialize Pump Pins
-  pinMode(PIN_WATER, OUTPUT);
-  pinMode(PIN_COLA, OUTPUT);
   pinMode(PIN_SODA, OUTPUT);
+  pinMode(PIN_COLA, OUTPUT);
   pinMode(PIN_SUGAR, OUTPUT);
   pinMode(PIN_LEMON, OUTPUT);
   pinMode(PIN_ORANGE, OUTPUT);
+  pinMode(PIN_PINEAPPLE, OUTPUT);
 
   // Turn off all relays (Active LOW)
-  digitalWrite(PIN_WATER, HIGH);
-  digitalWrite(PIN_COLA, HIGH);
   digitalWrite(PIN_SODA, HIGH);
+  digitalWrite(PIN_COLA, HIGH);
   digitalWrite(PIN_SUGAR, HIGH);
   digitalWrite(PIN_LEMON, HIGH);
   digitalWrite(PIN_ORANGE, HIGH);
+  digitalWrite(PIN_PINEAPPLE, HIGH);
 
-  Serial.println("Mixvell Dispenser Ready (v5.0).");
+  Serial.println("Mixvell Dispenser Ready (v7.0).");
 }
 
 void loop() {
@@ -93,8 +98,7 @@ void processCommand(String command) {
   }
 
   // STANDARD DISPENSE
-  // Array to hold the target mL for each pump
-  // Index 0=Water, 1=Cola, 2=Soda, 3=Sugar, 4=Lemon, 5=Orange
+  // Index 0=Soda, 1=Cola, 2=Sugar, 3=Lemon, 4=Orange, 5=Pineapple
   int targetML[6] = {0, 0, 0, 0, 0, 0};
 
   // Parse CSV
@@ -104,7 +108,7 @@ void processCommand(String command) {
 
   Serial.print("Parsed items: "); Serial.println(parsedCount);
   
-  int pins[6] = {PIN_WATER, PIN_COLA, PIN_SODA, PIN_SUGAR, PIN_LEMON, PIN_ORANGE};
+  int pins[6] = {PIN_SODA, PIN_COLA, PIN_SUGAR, PIN_LEMON, PIN_ORANGE, PIN_PINEAPPLE};
 
   for(int i=0; i<6; i++) {
      if (targetML[i] > 0) {
@@ -117,7 +121,7 @@ void processCommand(String command) {
 
 void runCleaningCycle() {
   Serial.println("STARTING CLEANING CYCLE...");
-  int pins[6] = {PIN_WATER, PIN_COLA, PIN_SODA, PIN_SUGAR, PIN_LEMON, PIN_ORANGE};
+  int pins[6] = {PIN_SODA, PIN_COLA, PIN_SUGAR, PIN_LEMON, PIN_ORANGE, PIN_PINEAPPLE};
   
   for(int i=0; i<6; i++) {
     Serial.print("Cleaning Pump on Pin "); Serial.println(pins[i]);

@@ -88,17 +88,17 @@ export class BluetoothService {
 
   /**
    * Sends the drink recipe to the Arduino via Serial.
-   * Format: Water,Cola,Soda,Sugar,Lemon,Orange\n
+   * Format: Soda,Cola,Sugar,Lemon,Orange,Pineapple\n
    */
   async dispenseDrink(recipe: DrinkRecipe): Promise<void> {
     // Ensure all values are Integers
     const values = [
-      Math.round(recipe[Ingredient.WATER]),
-      Math.round(recipe[Ingredient.COLA]),
       Math.round(recipe[Ingredient.SODA]),
+      Math.round(recipe[Ingredient.COLA]),
       Math.round(recipe[Ingredient.SUGAR]),
       Math.round(recipe[Ingredient.LEMON]),
       Math.round(recipe[Ingredient.ORANGE]),
+      Math.round(recipe[Ingredient.PINEAPPLE]),
     ];
 
     const commandString = values.join(',') + '\n';

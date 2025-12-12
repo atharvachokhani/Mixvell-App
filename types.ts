@@ -1,19 +1,19 @@
 export enum Ingredient {
-  WATER = 'Water',
-  COLA = 'Cola',
   SODA = 'Soda',
+  COLA = 'Cola',
   SUGAR = 'Sugar Syrup',
   LEMON = 'Lemon Mix',
   ORANGE = 'Orange Juice',
+  PINEAPPLE = 'Pineapple Juice',
 }
 
 export interface DrinkRecipe {
-  [Ingredient.WATER]: number;
-  [Ingredient.COLA]: number;
   [Ingredient.SODA]: number;
+  [Ingredient.COLA]: number;
   [Ingredient.SUGAR]: number;
   [Ingredient.LEMON]: number;
   [Ingredient.ORANGE]: number;
+  [Ingredient.PINEAPPLE]: number;
 }
 
 export interface SpecialtyDrink {
@@ -22,13 +22,17 @@ export interface SpecialtyDrink {
   description: string;
   baseIngredient: Ingredient;
   flavorIngredient: Ingredient;
-  // Ingredients that are part of the recipe but cannot be changed by the user
-  // e.g., Sugar syrup is required, or a splash of lemon in a Cola drink
   fixedIngredients: Partial<Record<Ingredient, number>>; 
   color: string;
-  // Limits for the flavor component to ensure the drink tastes good
   minFlavor: number;
   maxFlavor: number;
+}
+
+export interface RecipeConfig {
+  id: string;
+  minFlavor: number;
+  maxFlavor: number;
+  fixedIngredients: Partial<Record<Ingredient, number>>;
 }
 
 export type BluetoothState = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'ERROR';

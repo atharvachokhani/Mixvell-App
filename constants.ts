@@ -7,88 +7,67 @@ export const BLE_CHARACTERISTIC_UUID = 0xFFE1;
 export const MAX_VOLUME_ML = 100;
 
 export const INGREDIENT_COLORS: Record<Ingredient, string> = {
-  [Ingredient.WATER]: 'bg-blue-400',
+  [Ingredient.SODA]: 'bg-sky-200 shadow-[0_0_10px_#bae6fd]',
   [Ingredient.COLA]: 'bg-amber-900',
-  [Ingredient.SODA]: 'bg-sky-200',
   [Ingredient.SUGAR]: 'bg-white',
   [Ingredient.LEMON]: 'bg-yellow-400',
   [Ingredient.ORANGE]: 'bg-orange-500',
+  [Ingredient.PINEAPPLE]: 'bg-yellow-300 shadow-[0_0_10px_#fde047]',
 };
 
+// Default recipes - Can be overridden by recipeService
 export const SPECIALTY_DRINKS: SpecialtyDrink[] = [
   {
-    id: 'lemonade',
-    name: 'Classic Lemonade',
-    description: 'Refreshing water with a zesty lemon kick.',
-    baseIngredient: Ingredient.WATER,
-    flavorIngredient: Ingredient.LEMON,
-    fixedIngredients: { [Ingredient.SUGAR]: 5 }, // Reduced from 15
-    color: 'from-yellow-200 to-yellow-400',
-    minFlavor: 5,   
-    maxFlavor: 15,  // Reduced from 30. Syrups are potent.
+    id: 'orange-lemonade',
+    name: 'Orange Lemonade',
+    description: 'Zesty orange juice blended with fresh lemon soda.',
+    baseIngredient: Ingredient.SODA,
+    flavorIngredient: Ingredient.ORANGE,
+    fixedIngredients: { [Ingredient.LEMON]: 10, [Ingredient.SUGAR]: 5 },
+    color: 'from-orange-400 to-yellow-400',
+    minFlavor: 15,   
+    maxFlavor: 30,
   },
   {
-    id: 'lemon-soda',
-    name: 'Electric Lemon Soda',
-    description: 'Sparkling soda with a twist of lemon.',
+    id: 'classic-lemonade',
+    name: 'Classic Lemonade',
+    description: 'The all-time favorite refresher. Perfectly balanced.',
     baseIngredient: Ingredient.SODA,
     flavorIngredient: Ingredient.LEMON,
-    fixedIngredients: { [Ingredient.SUGAR]: 20 }, // UPDATED: 20mL Sugar
-    color: 'from-green-200 to-yellow-300',
-    minFlavor: 15, // UPDATED: Min 15mL
-    maxFlavor: 25, // UPDATED: Max 25mL
+    fixedIngredients: { [Ingredient.SUGAR]: 20 },
+    color: 'from-yellow-200 to-green-200',
+    minFlavor: 10, 
+    maxFlavor: 20, 
   },
   {
     id: 'plain-cola',
     name: 'Plain Cola',
-    description: 'The classic fizzy favorite.',
-    baseIngredient: Ingredient.SODA,
-    flavorIngredient: Ingredient.COLA,
-    fixedIngredients: {}, 
-    color: 'from-red-900 to-amber-900',
-    minFlavor: 5, // Cola Concentrate Range
-    maxFlavor: 10, 
+    description: 'Classic chilled cola with an optional lemon twist.',
+    baseIngredient: Ingredient.COLA,
+    flavorIngredient: Ingredient.LEMON, 
+    fixedIngredients: {},
+    color: 'from-red-900 to-black',
+    minFlavor: 0, // Can be 0 for pure cola
+    maxFlavor: 10,
   },
   {
-    id: 'masala-cola',
-    name: 'Masala Cola',
-    description: 'Spiced cola with a soda kick.',
+    id: 'pineapple-lemonade',
+    name: 'Pineapple Lemonade',
+    description: 'Tropical pineapple juice with a sparkling lemon kick.',
     baseIngredient: Ingredient.SODA,
-    flavorIngredient: Ingredient.COLA,
-    fixedIngredients: { [Ingredient.LEMON]: 5 }, // Reduced kick
-    color: 'from-amber-700 to-red-900',
-    minFlavor: 5, // Cola Concentrate Range
-    maxFlavor: 10, 
-  },
-  {
-    id: 'citrus-cola',
-    name: 'Citrus Cola',
-    description: 'Cola infused with zesty orange notes.',
-    baseIngredient: Ingredient.SODA,
-    flavorIngredient: Ingredient.ORANGE, 
-    fixedIngredients: { [Ingredient.COLA]: 10 }, // Reduced fixed Cola amount
-    color: 'from-orange-500 to-amber-900',
-    minFlavor: 5,
-    maxFlavor: 15, // Orange syrup is thick/potent
-  },
-  {
-    id: 'orange-cooler',
-    name: 'Orange Cooler',
-    description: 'Bubbly soda with fresh orange juice.',
-    baseIngredient: Ingredient.SODA,
-    flavorIngredient: Ingredient.ORANGE,
-    fixedIngredients: { [Ingredient.SUGAR]: 5 },
-    color: 'from-orange-400 to-red-400',
-    minFlavor: 5,
-    maxFlavor: 20, 
+    flavorIngredient: Ingredient.PINEAPPLE,
+    fixedIngredients: { [Ingredient.LEMON]: 10, [Ingredient.SUGAR]: 5 },
+    color: 'from-yellow-400 to-amber-300',
+    minFlavor: 15,
+    maxFlavor: 30, 
   },
 ];
 
 export const EMPTY_RECIPE: DrinkRecipe = {
-  [Ingredient.WATER]: 0,
-  [Ingredient.COLA]: 0,
   [Ingredient.SODA]: 0,
+  [Ingredient.COLA]: 0,
   [Ingredient.SUGAR]: 0,
   [Ingredient.LEMON]: 0,
   [Ingredient.ORANGE]: 0,
+  [Ingredient.PINEAPPLE]: 0,
 };
