@@ -17,6 +17,7 @@ const INITIAL_STATS: AppStats = {
     [Ingredient.SUGAR]: 0,
     [Ingredient.LEMON]: 0,
     [Ingredient.ORANGE]: 0,
+    [Ingredient.PINEAPPLE]: 0,
   },
 };
 

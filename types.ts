@@ -4,6 +4,7 @@ export enum Ingredient {
   SUGAR = 'Sugar Syrup',
   LEMON = 'Lemon Mix',
   ORANGE = 'Orange Juice',
+  PINEAPPLE = 'Pineapple Juice',
 }
 
 export interface DrinkRecipe {
@@ -12,6 +13,7 @@ export interface DrinkRecipe {
   [Ingredient.SUGAR]: number;
   [Ingredient.LEMON]: number;
   [Ingredient.ORANGE]: number;
+  [Ingredient.PINEAPPLE]: number;
 }
 
 export interface SpecialtyDrink {
