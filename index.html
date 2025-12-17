@@ -12,15 +12,15 @@
           extend: {
             colors: {
               neon: {
-                blue: '#00f3ff',
-                pink: '#ff00ff',
-                purple: '#bc13fe',
-                green: '#0aff0a',
-                yellow: '#f4ff00'
+                blue: '#0070f3', // Darker blue for light mode visibility
+                pink: '#d900d9',
+                purple: '#9333ea',
+                green: '#16a34a',
+                yellow: '#eab308'
               },
               glass: {
-                100: 'rgba(255, 255, 255, 0.1)',
-                200: 'rgba(255, 255, 255, 0.2)'
+                100: 'rgba(255, 255, 255, 0.7)',
+                200: 'rgba(255, 255, 255, 0.9)'
               }
             },
             animation: {
@@ -32,8 +32,8 @@
     </script>
     <style>
       body {
-        background-color: #0f172a;
-        color: #ffffff;
+        background-color: #f8fafc; /* Slate 50 - Very light gray */
+        color: #0f172a; /* Slate 900 - Very dark blue/black */
         font-family: 'Inter', sans-serif;
       }
       /* Custom slider styling */
@@ -45,29 +45,30 @@
         -webkit-appearance: none;
       }
       .glass-panel {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
       }
       /* Prevents pull-to-refresh and other touch behaviors that might interfere */
       html, body {
         overscroll-behavior-y: none;
       }
 
-      /* Custom Scrollbar for Laptop/Desktop */
+      /* Custom Scrollbar */
       ::-webkit-scrollbar {
         width: 8px;
         height: 8px;
       }
       ::-webkit-scrollbar-track {
-        background: #0f172a; 
+        background: #f1f5f9; 
       }
       ::-webkit-scrollbar-thumb {
-        background: #334155; 
+        background: #94a3b8; 
         border-radius: 4px;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: #475569; 
+        background: #64748b; 
       }
     </style>
 <script type="importmap">

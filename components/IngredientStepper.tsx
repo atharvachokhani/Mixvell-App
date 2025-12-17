@@ -64,15 +64,15 @@ export const IngredientStepper: React.FC<Props> = ({
   fillPercentage = Math.min(100, Math.max(0, fillPercentage));
 
   return (
-    <div className={`mb-4 bg-slate-800/50 p-3 sm:p-4 rounded-xl border ${readOnly ? 'border-slate-700/30' : 'border-slate-700'} select-none`}>
+    <div className={`mb-4 bg-white p-3 sm:p-4 rounded-xl border ${readOnly ? 'border-slate-200' : 'border-slate-300 shadow-sm'} select-none`}>
       <div className="flex justify-between items-center mb-3">
         <div className="flex items-center gap-2">
-          <span className={`w-3 h-3 rounded-full ${bgColor} shadow-[0_0_8px_currentColor]`}></span>
-          <label className="text-sm font-bold text-slate-300 uppercase tracking-wider">
+          <span className={`w-3 h-3 rounded-full ${bgColor} shadow-sm border border-black/10`}></span>
+          <label className="text-sm font-bold text-slate-700 uppercase tracking-wider">
             {label || ingredient}
           </label>
         </div>
-        <div className="text-xl font-bold text-white tabular-nums">
+        <div className="text-xl font-bold text-slate-900 tabular-nums">
           {value} <span className="text-xs text-slate-500 font-normal">mL</span>
         </div>
       </div>
@@ -82,39 +82,39 @@ export const IngredientStepper: React.FC<Props> = ({
           <button 
             onClick={handleDecrease}
             disabled={value <= minConstraint}
-            className="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-700 text-white hover:bg-slate-600 active:scale-95 transition-all disabled:opacity-30 disabled:active:scale-100 shadow-lg"
+            className="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-100 border border-slate-300 text-slate-700 hover:bg-slate-200 active:scale-95 transition-all disabled:opacity-50 disabled:active:scale-100 shadow-sm"
           >
             <Minus size={20} />
           </button>
 
           {/* Visual Indicator Bar */}
-          <div className="flex-1 h-4 bg-slate-900 rounded-full overflow-hidden relative border border-slate-700/50">
+          <div className="flex-1 h-4 bg-slate-200 rounded-full overflow-hidden relative border border-slate-300">
             <div 
               className={`h-full ${bgColor} transition-all duration-300 ease-out`}
               style={{ width: `${fillPercentage}%` }} 
             />
             {/* Grid lines for reference */}
             <div className="absolute inset-0 flex justify-between px-1">
-               <div className="w-px h-full bg-black/20"></div>
-               <div className="w-px h-full bg-black/20"></div>
-               <div className="w-px h-full bg-black/20"></div>
-               <div className="w-px h-full bg-black/20"></div>
+               <div className="w-px h-full bg-white/50"></div>
+               <div className="w-px h-full bg-white/50"></div>
+               <div className="w-px h-full bg-white/50"></div>
+               <div className="w-px h-full bg-white/50"></div>
             </div>
           </div>
 
           <button 
             onClick={handleIncrease}
             disabled={value >= maxConstraint}
-            className="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-700 text-white hover:bg-slate-600 active:scale-95 transition-all disabled:opacity-30 disabled:active:scale-100 shadow-lg"
+            className="w-12 h-12 flex items-center justify-center rounded-xl bg-slate-100 border border-slate-300 text-slate-700 hover:bg-slate-200 active:scale-95 transition-all disabled:opacity-50 disabled:active:scale-100 shadow-sm"
           >
             <Plus size={20} />
           </button>
         </div>
       ) : (
-        /* Read-only Bar - Styled to look purposeful, not like a disabled control */
-        <div className="mt-2 h-3 w-full bg-slate-900/40 rounded-full overflow-hidden border border-white/5">
+        /* Read-only Bar */
+        <div className="mt-2 h-3 w-full bg-slate-200 rounded-full overflow-hidden border border-slate-300">
            <div 
-             className={`h-full ${bgColor} opacity-70 transition-all duration-500`}
+             className={`h-full ${bgColor} opacity-80 transition-all duration-500`}
              style={{ width: `${fillPercentage}%` }} 
            />
         </div>

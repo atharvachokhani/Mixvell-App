@@ -13,13 +13,14 @@ export const Button: React.FC<ButtonProps> = ({
   disabled,
   ...props 
 }) => {
-  const baseStyles = "relative px-6 py-3 rounded-lg font-bold tracking-wide transition-all duration-300 transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden";
+  const baseStyles = "relative px-6 py-3 rounded-lg font-bold tracking-wide transition-all duration-300 transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden border";
   
   const variants = {
-    primary: "bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-900/50",
-    secondary: "bg-slate-700 hover:bg-slate-600 text-white border border-slate-600",
-    danger: "bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-900/50",
-    neon: "bg-transparent border-2 border-neon-blue text-neon-blue hover:bg-neon-blue hover:text-black shadow-[0_0_15px_rgba(0,243,255,0.3)] hover:shadow-[0_0_25px_rgba(0,243,255,0.6)]"
+    primary: "bg-blue-600 hover:bg-blue-700 text-white border-transparent shadow-md shadow-blue-200",
+    secondary: "bg-white hover:bg-slate-50 text-slate-700 border-slate-300 shadow-sm",
+    danger: "bg-red-600 hover:bg-red-700 text-white border-transparent shadow-md shadow-red-200",
+    // Neon adapted for light mode: High contrast blue
+    neon: "bg-white border-blue-600 text-blue-700 hover:bg-blue-50 hover:shadow-lg shadow-md"
   };
 
   return (

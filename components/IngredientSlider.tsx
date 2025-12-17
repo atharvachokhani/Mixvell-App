@@ -48,14 +48,14 @@ export const IngredientSlider: React.FC<Props> = ({
   }
 
   return (
-    <div className={`mb-5 bg-slate-800/50 p-4 rounded-xl border ${readOnly ? 'border-slate-700/50 opacity-80' : 'border-slate-700'} select-none transition-opacity`}>
+    <div className={`mb-5 bg-white p-4 rounded-xl border ${readOnly ? 'border-slate-200 opacity-80' : 'border-slate-300 shadow-sm'} select-none transition-opacity`}>
       <div className="flex justify-between items-center mb-2">
-        <label className="text-sm font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+        <label className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
           {label || ingredient}
-          {readOnly && <span className="text-[10px] bg-slate-700 px-1.5 py-0.5 rounded text-slate-400">AUTO</span>}
+          {readOnly && <span className="text-[10px] bg-slate-200 px-1.5 py-0.5 rounded text-slate-600">AUTO</span>}
         </label>
         <div className="flex flex-col items-end">
-          <span className={`text-lg font-bold ${value > 0 ? 'text-white' : 'text-slate-500'}`}>
+          <span className={`text-lg font-bold ${value > 0 ? 'text-slate-900' : 'text-slate-400'}`}>
             {value} mL
           </span>
           {/* Show range hints if heavily constrained and interactive */}
@@ -70,7 +70,7 @@ export const IngredientSlider: React.FC<Props> = ({
       {/* Increased height to h-12 (48px) for standard mobile touch target size */}
       <div className={`relative h-12 flex items-center ${isInteractive ? 'touch-none' : ''}`}>
         {/* Track Background */}
-        <div className="absolute w-full h-3 bg-slate-700 rounded-full overflow-hidden top-1/2 -translate-y-1/2 pointer-events-none">
+        <div className="absolute w-full h-3 bg-slate-200 rounded-full overflow-hidden top-1/2 -translate-y-1/2 pointer-events-none border border-slate-300/50">
           {/* Fill */}
           <div 
             className={`h-full ${bgColor} transition-all duration-75 ease-out`}
@@ -109,7 +109,7 @@ export const IngredientSlider: React.FC<Props> = ({
         
         {/* Thumb visual - purely decorative, follows the calculation */}
         <div 
-          className={`pointer-events-none absolute w-7 h-7 rounded-full shadow-lg border-2 transition-all duration-75 ease-out z-40 top-1/2 -translate-y-1/2 ${readOnly ? 'bg-slate-500 border-slate-600 hidden' : 'bg-white border-slate-200'}`}
+          className={`pointer-events-none absolute w-7 h-7 rounded-full shadow-lg border-2 transition-all duration-75 ease-out z-40 top-1/2 -translate-y-1/2 ${readOnly ? 'bg-slate-300 border-slate-400 hidden' : 'bg-white border-slate-300'}`}
           style={{ left: `calc(${fillPercentage}% - 14px)` }}
         />
       </div>

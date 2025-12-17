@@ -7,11 +7,11 @@ export const BLE_CHARACTERISTIC_UUID = 0xFFE1;
 export const MAX_VOLUME_ML = 100;
 
 export const INGREDIENT_COLORS: Record<Ingredient, string> = {
-  [Ingredient.SODA]: 'bg-sky-200 shadow-[0_0_10px_#bae6fd]',
-  [Ingredient.COLA]: 'bg-amber-900',
-  [Ingredient.SUGAR]: 'bg-white',
-  [Ingredient.LEMON]: 'bg-yellow-400',
-  [Ingredient.ORANGE]: 'bg-orange-500',
+  [Ingredient.SODA]: 'bg-sky-200 shadow-[0_0_10px_#7dd3fc]',
+  [Ingredient.COLA]: 'bg-amber-900 shadow-[0_0_5px_#78350f]',
+  [Ingredient.SUGAR]: 'bg-slate-100 border border-slate-300',
+  [Ingredient.LEMON]: 'bg-yellow-400 shadow-[0_0_10px_#facc15]',
+  [Ingredient.ORANGE]: 'bg-orange-500 shadow-[0_0_10px_#f97316]',
   [Ingredient.PINEAPPLE]: 'bg-yellow-300 shadow-[0_0_10px_#fde047]',
 };
 
