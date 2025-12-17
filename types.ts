@@ -3,7 +3,7 @@ export enum Ingredient {
   COLA = 'Cola',
   SUGAR = 'Sugar Syrup',
   LEMON = 'Lemon Mix',
-  ORANGE = 'Orange Juice',
+  SPICY_LEMON = 'Spicy Lemon Mix',
   PINEAPPLE = 'Pineapple Juice',
 }
 
@@ -12,7 +12,7 @@ export interface DrinkRecipe {
   [Ingredient.COLA]: number;
   [Ingredient.SUGAR]: number;
   [Ingredient.LEMON]: number;
-  [Ingredient.ORANGE]: number;
+  [Ingredient.SPICY_LEMON]: number;
   [Ingredient.PINEAPPLE]: number;
 }
 

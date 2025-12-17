@@ -16,7 +16,7 @@ const INITIAL_STATS: AppStats = {
     [Ingredient.COLA]: 0,
     [Ingredient.SUGAR]: 0,
     [Ingredient.LEMON]: 0,
-    [Ingredient.ORANGE]: 0,
+    [Ingredient.SPICY_LEMON]: 0,
     [Ingredient.PINEAPPLE]: 0,
   },
 };
@@ -25,6 +25,8 @@ export const statsService = {
   getStats: (): AppStats => {
     try {
       const stored = localStorage.getItem(STATS_KEY);
+      // If we load stats, we need to handle potential migrations if keys change, 
+      // but for now we'll just reset if structure mismatch or rely on strict typing
       return stored ? JSON.parse(stored) : INITIAL_STATS;
     } catch (e) {
       console.error("Failed to load stats", e);
@@ -45,6 +47,9 @@ export const statsService = {
         // Check if ingredient exists in current tracking (handles removal of old ingredients)
         if (newStats.ingredientUsage[ing] !== undefined) {
              newStats.ingredientUsage[ing] = (newStats.ingredientUsage[ing] || 0) + (value || 0);
+        } else if (value && value > 0) {
+             // Initialize if new ingredient
+             newStats.ingredientUsage[ing] = value;
         }
         recipeTotal += (value || 0);
       });

@@ -8,9 +8,40 @@ import { Button } from './components/Button';
 import { IngredientStepper } from './components/IngredientStepper';
 import { EMPTY_RECIPE, MAX_VOLUME_ML, SPECIALTY_DRINKS } from './constants';
 import { ARDUINO_SKETCH } from './services/firmwareTemplate';
-import { Zap, RotateCcw, CupSoda, Home, Droplets, Martini, Code, CheckCircle, BarChart3, Settings, PenTool, AlertTriangle, Cable } from 'lucide-react';
+import { Zap, RotateCcw, CupSoda, Home, Droplets, Martini, Code, CheckCircle, BarChart3, Settings, PenTool, AlertTriangle, Cable, Usb } from 'lucide-react';
 
 // --- Shared Components ---
+
+const TopBar = () => {
+  const [status, setStatus] = useState<BluetoothState>('DISCONNECTED');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Simple polling to update status in UI since we don't have an event emitter in this simple service
+    const checkStatus = () => {
+      setStatus(bluetoothService.isConnected() ? 'CONNECTED' : 'DISCONNECTED');
+    };
+    
+    checkStatus();
+    const interval = setInterval(checkStatus, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="fixed top-0 left-0 right-0 h-16 bg-white/90 backdrop-blur-md border-b border-slate-200 z-50 flex items-center justify-between px-4 sm:px-6 shadow-sm">
+       <div onClick={() => navigate('/menu')} className="font-black text-lg tracking-tight flex items-center gap-2 text-slate-900 cursor-pointer">
+         <span className="text-2xl">🍹</span> 
+         <span className="hidden sm:inline">Mixvell</span>
+       </div>
+       
+       <div className={`text-xs font-bold px-3 py-1.5 rounded-full border flex items-center gap-2 transition-colors ${status === 'CONNECTED' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-slate-50 text-slate-500 border-slate-200'}`}>
+          <Usb size={14} />
+          {status === 'CONNECTED' ? 'USB Connected' : 'USB Offline'}
+          <div className={`w-2 h-2 rounded-full ${status === 'CONNECTED' ? 'bg-green-500 animate-pulse' : 'bg-slate-300'}`}></div>
+       </div>
+    </div>
+  );
+};
 
 const BottomNav = () => {
   const navigate = useNavigate();
@@ -49,7 +80,8 @@ const BottomNav = () => {
 
 const LayoutWithNav = () => {
   return (
-    <div className="pb-24 md:pb-32 bg-slate-50 min-h-screen">
+    <div className="pb-24 md:pb-32 pt-20 bg-slate-50 min-h-screen">
+      <TopBar />
       <Outlet />
       <BottomNav />
     </div>
@@ -154,7 +186,7 @@ const MenuScreen = () => {
   };
 
   return (
-    <div className="min-h-screen p-6 pt-12 max-w-5xl mx-auto flex flex-col gap-8 bg-slate-50">
+    <div className="p-6 max-w-5xl mx-auto flex flex-col gap-8">
       <h2 className="text-4xl font-black text-center mb-4 select-none cursor-pointer text-slate-900" onClick={handleTitleClick}>
         <span className="text-blue-600">Welcome</span> Back
       </h2>
@@ -168,7 +200,7 @@ const MenuScreen = () => {
             <Zap size={180} />
           </div>
           <h3 className="text-3xl font-bold text-slate-900 mb-2 relative z-10">Make Your Own</h3>
-          <p className="text-slate-500 text-lg relative z-10 font-medium">Mix Pineapple, Orange, Cola & Soda.</p>
+          <p className="text-slate-500 text-lg relative z-10 font-medium">Mix Pineapple, Cola, Soda & Spicy Lemon.</p>
         </div>
 
         <div 
@@ -216,11 +248,11 @@ const CustomMixScreen = () => {
 
   // Group ingredients
   const baseLiquids = [Ingredient.SODA];
-  const flavors = [Ingredient.COLA, Ingredient.ORANGE, Ingredient.PINEAPPLE];
+  const flavors = [Ingredient.COLA, Ingredient.PINEAPPLE, Ingredient.SPICY_LEMON];
   const enhancers = [Ingredient.LEMON, Ingredient.SUGAR];
 
   return (
-    <div className="min-h-screen p-6 max-w-6xl mx-auto pb-40 bg-slate-50">
+    <div className="p-6 max-w-6xl mx-auto pb-40">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
         <h2 className="text-3xl font-bold text-slate-900">Custom Mix</h2>
         <div className={`px-4 py-2 rounded-full text-base font-bold border transition-colors ${currentTotal >= MAX_VOLUME_ML ? 'bg-green-100 border-green-500 text-green-700' : 'bg-white border-slate-300 text-slate-500 shadow-sm'}`}>
@@ -311,7 +343,7 @@ const SpecialtyListScreen = () => {
   });
 
   return (
-    <div className="min-h-screen p-6 max-w-7xl mx-auto pb-40 bg-slate-50">
+    <div className="p-6 max-w-7xl mx-auto pb-40">
       <h2 className="text-3xl font-bold text-slate-900 mb-8 text-center md:text-left">Specialty Menu</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {recipes.map(drink => (
@@ -378,7 +410,7 @@ const SpecialtyAdjustScreen = () => {
   };
 
   return (
-    <div className="min-h-screen p-6 flex flex-col items-center justify-center max-w-4xl mx-auto pb-32 bg-slate-50">
+    <div className="p-6 flex flex-col items-center justify-center max-w-4xl mx-auto pb-32">
       <div className="w-full max-w-2xl bg-white p-8 rounded-3xl border border-slate-200 shadow-2xl">
         <div className="flex items-center gap-4 mb-8">
           <button onClick={() => navigate('/specialty')} className="p-3 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors border border-slate-200">
@@ -453,7 +485,7 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen p-6 max-w-4xl mx-auto pb-40 bg-slate-50">
+    <div className="p-6 max-w-4xl mx-auto pb-40">
       <div className="flex items-center gap-4 mb-8">
         <button onClick={() => navigate('/menu')} className="p-3 rounded-full bg-white text-slate-700 hover:bg-slate-100 transition-colors border border-slate-200"><RotateCcw size={20} /></button>
         <h2 className="text-2xl font-bold text-slate-900">Admin Dashboard</h2>
@@ -533,7 +565,7 @@ const RecipeEditorScreen = () => {
   };
 
   return (
-    <div className="min-h-screen p-6 max-w-2xl mx-auto bg-slate-50">
+    <div className="p-6 max-w-2xl mx-auto bg-slate-50 pt-10">
       <div className="flex items-center justify-between mb-8">
         <button onClick={() => navigate('/admin')} className="text-slate-500 hover:text-slate-900 transition-colors font-medium">Cancel</button>
         <h2 className="text-xl font-bold text-slate-900">Edit: {defaultRecipe.name}</h2>
@@ -579,7 +611,7 @@ const FirmwareScreen = () => {
         setTimeout(() => setCopied(false), 2000);
     };
     return (
-        <div className="min-h-screen p-6 max-w-4xl mx-auto pb-40 bg-slate-50">
+        <div className="p-6 max-w-4xl mx-auto pb-40 bg-slate-50">
             <div className="flex items-center gap-4 mb-6">
                 <button onClick={() => navigate('/admin')} className="p-3 rounded-full bg-white text-slate-700 hover:bg-slate-100 transition-colors border border-slate-200"><RotateCcw size={20} /></button>
                 <h2 className="text-xl font-bold text-slate-900">Firmware</h2>
