@@ -18,6 +18,17 @@ export const INGREDIENT_COLORS: Record<Ingredient, string> = {
 // Permanent Specialty Menu with Increased Sugar
 export const SPECIALTY_DRINKS: SpecialtyDrink[] = [
   {
+    id: 'plain-cola',
+    name: 'Plain Cola',
+    description: 'The timeless classic. Pure cola flavor with a heavy sweet finish.',
+    baseIngredient: Ingredient.COLA,
+    flavorIngredient: Ingredient.SUGAR,
+    fixedIngredients: { [Ingredient.SODA]: 10 },
+    color: 'from-amber-950 to-slate-900',
+    minFlavor: 40,
+    maxFlavor: 60,
+  },
+  {
     id: 'masala-cola',
     name: 'Masala Cola',
     description: 'The street classic. Spicy, fizzy, and extra sweet.',

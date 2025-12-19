@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, useNavigate, useLocation, Outlet, useParams } from 'react-router-dom';
 import { bluetoothService } from './services/bluetoothService';
@@ -198,11 +199,13 @@ const MenuScreen = () => {
 const CustomMixScreen = () => {
   const navigate = useNavigate();
   const [recipe, setRecipe] = useState<DrinkRecipe>({...EMPTY_RECIPE});
-  const currentTotal = Object.values(recipe).reduce((a, b) => a + b, 0);
+  // Fix: Cast Object.values to number[] to resolve unknown type issues during reduce and arithmetic comparisons
+  const currentTotal = (Object.values(recipe) as number[]).reduce((a, b) => a + b, 0);
 
   const handleIngredientChange = (ingredient: Ingredient, value: number) => {
     let newRecipe = { ...recipe, [ingredient]: value };
-    let newTotal = Object.values(newRecipe).reduce((a, b) => a + b, 0);
+    // Fix: Cast Object.values to number[] to ensure newTotal is a number type for subsequent arithmetic
+    const newTotal = (Object.values(newRecipe) as number[]).reduce((a, b) => a + b, 0);
     if (newTotal > MAX_VOLUME_ML) newRecipe[ingredient] -= (newTotal - MAX_VOLUME_ML);
     setRecipe(newRecipe);
   };
@@ -278,7 +281,8 @@ const SpecialtyAdjustScreen = () => {
   useEffect(() => { if (drink) setFlavorAmount(drink.minFlavor); }, [id]);
   if (!drink) return null;
 
-  const fixedVolume = Object.values(drink.fixedIngredients).reduce((a: number, b) => a + (b || 0), 0);
+  // Fix: Cast b to number to resolve 'unknown' type errors during addition in reduce
+  const fixedVolume = Object.values(drink.fixedIngredients).reduce((a: number, b) => a + ((b as number) || 0), 0);
   const baseAmount = Math.max(0, MAX_VOLUME_ML - fixedVolume - flavorAmount);
 
   return (
