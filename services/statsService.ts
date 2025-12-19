@@ -17,7 +17,7 @@ const INITIAL_STATS: AppStats = {
     [Ingredient.SUGAR]: 0,
     [Ingredient.LEMON]: 0,
     [Ingredient.SPICY_LEMON]: 0,
-    [Ingredient.PINEAPPLE]: 0,
+    [Ingredient.ORANGE_JUICE]: 0,
   },
 };
 
@@ -25,11 +25,15 @@ export const statsService = {
   getStats: (): AppStats => {
     try {
       const stored = localStorage.getItem(STATS_KEY);
-      // If we load stats, we need to handle potential migrations if keys change, 
-      // but for now we'll just reset if structure mismatch or rely on strict typing
-      return stored ? JSON.parse(stored) : INITIAL_STATS;
+      if (!stored) return INITIAL_STATS;
+      
+      const stats = JSON.parse(stored);
+      // Migration check: Ensure Orange Juice exists in usage
+      if (!stats.ingredientUsage[Ingredient.ORANGE_JUICE]) {
+        stats.ingredientUsage[Ingredient.ORANGE_JUICE] = 0;
+      }
+      return stats;
     } catch (e) {
-      console.error("Failed to load stats", e);
       return INITIAL_STATS;
     }
   },
@@ -38,28 +42,20 @@ export const statsService = {
     try {
       const current = statsService.getStats();
       const newStats = { ...current };
-
       newStats.totalDrinks += 1;
       
       let recipeTotal = 0;
       Object.entries(recipe).forEach(([key, value]) => {
         const ing = key as Ingredient;
-        // Check if ingredient exists in current tracking (handles removal of old ingredients)
         if (newStats.ingredientUsage[ing] !== undefined) {
              newStats.ingredientUsage[ing] = (newStats.ingredientUsage[ing] || 0) + (value || 0);
-        } else if (value && value > 0) {
-             // Initialize if new ingredient
-             newStats.ingredientUsage[ing] = value;
         }
         recipeTotal += (value || 0);
       });
 
       newStats.totalVolume += recipeTotal;
-
       localStorage.setItem(STATS_KEY, JSON.stringify(newStats));
-    } catch (e) {
-      console.error("Failed to save stats", e);
-    }
+    } catch (e) {}
   },
 
   resetStats: () => {
