@@ -15,7 +15,6 @@ const INITIAL_STATS: AppStats = {
     [Ingredient.SODA]: 0,
     [Ingredient.COLA]: 0,
     [Ingredient.SUGAR]: 0,
-    [Ingredient.LEMON]: 0,
     [Ingredient.SPICY_LEMON]: 0,
     [Ingredient.ORANGE_JUICE]: 0,
   },
@@ -26,13 +25,7 @@ export const statsService = {
     try {
       const stored = localStorage.getItem(STATS_KEY);
       if (!stored) return INITIAL_STATS;
-      
-      const stats = JSON.parse(stored);
-      // Migration check: Ensure Orange Juice exists in usage
-      if (!stats.ingredientUsage[Ingredient.ORANGE_JUICE]) {
-        stats.ingredientUsage[Ingredient.ORANGE_JUICE] = 0;
-      }
-      return stats;
+      return JSON.parse(stored);
     } catch (e) {
       return INITIAL_STATS;
     }

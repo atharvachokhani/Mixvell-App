@@ -2,7 +2,6 @@ export enum Ingredient {
   SODA = 'Soda',
   COLA = 'Cola',
   SUGAR = 'Sugar Syrup',
-  LEMON = 'Lemon Mix',
   SPICY_LEMON = 'Spicy Lemon Mix',
   ORANGE_JUICE = 'Orange Juice',
 }
@@ -11,7 +10,6 @@ export interface DrinkRecipe {
   [Ingredient.SODA]: number;
   [Ingredient.COLA]: number;
   [Ingredient.SUGAR]: number;
-  [Ingredient.LEMON]: number;
   [Ingredient.SPICY_LEMON]: number;
   [Ingredient.ORANGE_JUICE]: number;
 }
@@ -35,4 +33,4 @@ export interface RecipeConfig {
   fixedIngredients: Partial<Record<Ingredient, number>>;
 }
 
-export type BluetoothState = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'ERROR';
+export type ConnectionState = 'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'ERROR';

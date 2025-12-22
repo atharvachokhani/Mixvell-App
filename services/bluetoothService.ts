@@ -1,21 +1,23 @@
 import { DrinkRecipe, Ingredient } from '../types';
 
-// NOTE: We are using the Web Serial API here.
+/**
+ * SerialService handles the USB/Cable connection to the Arduino
+ * using the browser's Web Serial API.
+ */
 export const isSerialSupported = (): boolean => {
   return typeof navigator !== 'undefined' && 'serial' in navigator;
 };
 
-export class BluetoothService {
+export class SerialService {
   private port: any = null;
   private writer: any = null;
   private isSimulated: boolean = false;
 
   constructor() {
-    if (typeof navigator !== 'undefined' && 'serial' in navigator) {
-      // Cast navigator to any because the Web Serial API is experimental and types may be missing or default to unknown
+    if (isSerialSupported()) {
       (navigator as any).serial.addEventListener('disconnect', (event: any) => {
         if (event.port === this.port) {
-          console.log('Serial port physically disconnected');
+          console.warn('USB Cable Unplugged');
           this.disconnect();
         }
       });
@@ -28,7 +30,7 @@ export class BluetoothService {
     }
 
     if (!isSerialSupported()) {
-      throw new Error('Web Serial is not supported in this browser. Try Chrome or Edge.');
+      throw new Error('Web Serial is not supported. Please use Chrome, Edge, or Opera.');
     }
 
     try {
@@ -40,7 +42,7 @@ export class BluetoothService {
       textEncoder.readable.pipeTo(port.writable);
       this.writer = textEncoder.writable.getWriter();
       
-      console.log('Serial connected successfully');
+      console.log('USB Serial connected successfully');
     } catch (error) {
       console.error('Serial Connection Error:', error);
       throw error;
@@ -49,7 +51,7 @@ export class BluetoothService {
 
   async connectSimulation(): Promise<void> {
     this.isSimulated = true;
-    console.log('Simulation Mode Activated');
+    console.log('Simulation Mode: No USB hardware required');
     await new Promise(resolve => setTimeout(resolve, 500));
   }
 
@@ -78,13 +80,22 @@ export class BluetoothService {
   }
 
   async dispenseDrink(recipe: DrinkRecipe): Promise<void> {
+    /**
+     * UPDATED MAPPING:
+     * Arduino Pin 2: Soda         (Index 0)
+     * Arduino Pin 3: Cola         (Index 1)
+     * Arduino Pin 4: Sugar Syrup  (Index 2)
+     * Arduino Pin 5: Orange Juice (Index 3 - REDIRECTED FROM LEMON)
+     * Arduino Pin 6: Spicy Lemon  (Index 4)
+     * Arduino Pin 7: 0            (Index 5 - BROKEN PUMP)
+     */
     const values = [
-      Math.round(recipe[Ingredient.SODA]),
-      Math.round(recipe[Ingredient.COLA]),
-      Math.round(recipe[Ingredient.SUGAR]),
-      Math.round(recipe[Ingredient.LEMON]),
-      Math.round(recipe[Ingredient.SPICY_LEMON]),
-      Math.round(recipe[Ingredient.ORANGE_JUICE]),
+      Math.round(recipe[Ingredient.SODA] || 0),
+      Math.round(recipe[Ingredient.COLA] || 0),
+      Math.round(recipe[Ingredient.SUGAR] || 0),
+      Math.round(recipe[Ingredient.ORANGE_JUICE] || 0), // Now on Lemon's pin
+      Math.round(recipe[Ingredient.SPICY_LEMON] || 0),
+      0, // Disabled broken orange pin
     ];
 
     const commandString = values.join(',') + '\n';
@@ -97,20 +108,20 @@ export class BluetoothService {
 
   private async sendCommand(cmd: string): Promise<void> {
     if (this.isSimulated) {
-      console.log('%c SIMULATED OUTPUT: ' + cmd, 'background: #222; color: #bada55');
+      console.log('%c SIMULATED USB OUT: ' + cmd, 'background: #222; color: #bada55; padding: 2px 5px; border-radius: 3px');
       return;
     }
 
-    if (!this.writer) throw new Error('Not connected to a device.');
+    if (!this.writer) throw new Error('Hardware disconnected.');
 
     try {
       await this.writer.write(cmd);
     } catch (error) {
-      console.error('Failed to send command:', error);
-      this.disconnect(); // If write fails, assume connection lost
+      console.error('Cable transmission error:', error);
+      this.disconnect();
       throw error;
     }
   }
 }
 
-export const bluetoothService = new BluetoothService();
+export const serialService = new SerialService();
